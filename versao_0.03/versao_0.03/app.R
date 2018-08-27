@@ -1,0 +1,4328 @@
+options(encoding = "UTF-8")
+
+########################################################################################### 
+#pacotes 
+library(shiny)
+library(ggplot2)
+library(shinydashboard)
+library(plotly)
+library(leaflet)
+library(magrittr)
+library(htmltools)
+library(plyr)
+library(readr)
+library(stringr)
+library(dplyr)
+library(DT)
+library(ggvis)
+library(zoo)
+library(scales)
+
+
+
+#Banco de dados para o mapa
+dados_upas <- read_csv("base_de_dados/extraidas/dados_upas.csv")
+
+
+########################################################################################### 
+#Bancos de dados de produção
+##########################################################################################
+#Norte
+##Médico
+atendimentos_med_norte_mes <- read_csv("base_de_dados/transformadas/atendimentos_med_norte_mes.csv")
+atendimentos_med_norte_dia <- read_csv("base_de_dados/transformadas/atendimentos_med_norte_dia.csv")
+atendimentos_med_norte_dia$DIA <- factor(atendimentos_med_norte_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+atendimentos_med_norte_hora <- read_csv("base_de_dados/transformadas/atendimentos_med_norte_hora.csv")
+atendimentos_med_norte_hora$HORA <- as.numeric(atendimentos_med_norte_hora$HORA)
+#Classificação de Risco
+atendimentos_classificacao_norte_mes <- read_csv("base_de_dados/transformadas/atendimentos_classificacao_norte_mes.csv")
+atendimentos_classificacao_norte_dia <- read_csv("base_de_dados/transformadas/atendimentos_classificacao_norte_dia.csv")
+atendimentos_classificacao_norte_dia$DIA <- factor(atendimentos_classificacao_norte_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+atendimentos_classificacao_norte_hora <- read_csv("base_de_dados/transformadas/atendimentos_classificacao_norte_hora.csv")
+atendimentos_classificacao_norte_hora$HORA <- as.numeric(atendimentos_classificacao_norte_hora$HORA)
+#Odontologia
+atendimentos_odontologia_norte_mes <- read_csv("base_de_dados/transformadas/atendimentos_odontologia_norte_mes.csv")
+atendimentos_odontologia_norte_dia <- read_csv("base_de_dados/transformadas/atendimentos_odontologia_norte_dia.csv")
+atendimentos_odontologia_norte_dia$DIA <- factor(atendimentos_odontologia_norte_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+atendimentos_odontologia_norte_hora <- read_csv("base_de_dados/transformadas/atendimentos_odontologia_norte_hora.csv")
+atendimentos_odontologia_norte_hora$HORA <- as.numeric(atendimentos_odontologia_norte_hora$HORA)
+
+
+
+#Sul
+##Médico
+atendimentos_med_sul_mes <- read_csv("base_de_dados/transformadas/atendimentos_med_sul_mes.csv")
+atendimentos_med_sul_dia <- read_csv("base_de_dados/transformadas/atendimentos_med_sul_dia.csv")
+atendimentos_med_sul_dia$DIA <- factor(atendimentos_med_sul_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+atendimentos_med_sul_hora <- read_csv("base_de_dados/transformadas/atendimentos_med_sul_hora.csv")
+atendimentos_med_sul_hora$HORA <- as.numeric(atendimentos_med_sul_hora$HORA)
+#Classificação de Risco
+atendimentos_classificacao_sul_mes <- read_csv("base_de_dados/transformadas/atendimentos_classificacao_sul_mes.csv")
+atendimentos_classificacao_sul_dia <- read_csv("base_de_dados/transformadas/atendimentos_classificacao_sul_dia.csv")
+atendimentos_classificacao_sul_dia$DIA <- factor(atendimentos_classificacao_sul_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+atendimentos_classificacao_sul_hora <- read_csv("base_de_dados/transformadas/atendimentos_classificacao_sul_hora.csv")
+atendimentos_classificacao_sul_hora$HORA <- as.numeric(atendimentos_classificacao_sul_hora$HORA)
+#Odontologia
+atendimentos_odontologia_sul_mes <- read_csv("base_de_dados/transformadas/atendimentos_odontologia_sul_mes.csv")
+atendimentos_odontologia_sul_dia <- read_csv("base_de_dados/transformadas/atendimentos_odontologia_sul_dia.csv")
+atendimentos_odontologia_sul_dia$DIA <- factor(atendimentos_odontologia_sul_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+atendimentos_odontologia_sul_hora <- read_csv("base_de_dados/transformadas/atendimentos_odontologia_sul_hora.csv")
+atendimentos_odontologia_sul_hora$HORA <- as.numeric(atendimentos_odontologia_sul_hora$HORA)
+
+########################################################################################### 
+#Bancos de dados de tempo de atendimento
+##########################################################################################
+#Norte
+##Médico
+tempo_med_norte_mes <- read_csv("base_de_dados/transformadas/tempo_med_norte_mes.csv")
+tempo_med_norte_dia <- read_csv("base_de_dados/transformadas/tempo_med_norte_dia.csv")
+tempo_med_norte_dia$DIA <- factor(tempo_med_norte_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+tempo_med_norte_hora <- read_csv("base_de_dados/transformadas/tempo_med_norte_hora.csv")
+tempo_med_norte_hora$HORA <- as.numeric(tempo_med_norte_hora$HORA)
+#Classificação de Risco
+tempo_classificacao_norte_mes <- read_csv("base_de_dados/transformadas/tempo_classificacao_norte_mes.csv")
+tempo_classificacao_norte_dia <- read_csv("base_de_dados/transformadas/tempo_classificacao_norte_dia.csv")
+tempo_classificacao_norte_dia$DIA <- factor(tempo_classificacao_norte_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+tempo_classificacao_norte_hora <- read_csv("base_de_dados/transformadas/tempo_classificacao_norte_hora.csv")
+tempo_classificacao_norte_hora$HORA <- as.numeric(tempo_classificacao_norte_hora$HORA)
+#Odontologia
+tempo_odontologia_norte_mes <- read_csv("base_de_dados/transformadas/tempo_odontologia_norte_mes.csv")
+tempo_odontologia_norte_dia <- read_csv("base_de_dados/transformadas/tempo_odontologia_norte_dia.csv")
+tempo_odontologia_norte_dia$DIA <- factor(tempo_odontologia_norte_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+tempo_odontologia_norte_hora <- read_csv("base_de_dados/transformadas/tempo_odontologia_norte_hora.csv")
+tempo_odontologia_norte_hora$HORA <- as.numeric(tempo_odontologia_norte_hora$HORA)
+
+#Sul
+##Médico
+tempo_med_sul_mes <- read_csv("base_de_dados/transformadas/tempo_med_sul_mes.csv")
+tempo_med_sul_dia <- read_csv("base_de_dados/transformadas/tempo_med_sul_dia.csv")
+tempo_med_sul_dia$DIA <- factor(tempo_med_sul_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+tempo_med_sul_hora <- read_csv("base_de_dados/transformadas/tempo_med_sul_hora.csv")
+tempo_med_sul_hora$HORA <- as.numeric(tempo_med_sul_hora$HORA)
+#Classificação de Risco
+tempo_classificacao_sul_mes <- read_csv("base_de_dados/transformadas/tempo_classificacao_sul_mes.csv")
+tempo_classificacao_sul_dia <- read_csv("base_de_dados/transformadas/tempo_classificacao_sul_dia.csv")
+tempo_classificacao_sul_dia$DIA <- factor(tempo_classificacao_sul_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+tempo_classificacao_sul_hora <- read_csv("base_de_dados/transformadas/tempo_classificacao_sul_hora.csv")
+tempo_classificacao_sul_hora$HORA <- as.numeric(tempo_classificacao_sul_hora$HORA)
+#Odontologia
+tempo_odontologia_sul_mes <- read_csv("base_de_dados/transformadas/tempo_odontologia_sul_mes.csv")
+tempo_odontologia_sul_dia <- read_csv("base_de_dados/transformadas/tempo_odontologia_sul_dia.csv")
+tempo_odontologia_sul_dia$DIA <- factor(tempo_odontologia_sul_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+tempo_odontologia_sul_hora <- read_csv("base_de_dados/transformadas/tempo_odontologia_sul_hora.csv")
+tempo_odontologia_sul_hora$HORA <- as.numeric(tempo_odontologia_sul_hora$HORA)
+
+
+########################################################################################### 
+#Bancos de dados de tempo de Espera
+##########################################################################################
+#Norte
+##Médico
+espera_med_norte_mes <- read_csv("base_de_dados/transformadas/espera_med_norte_mes.csv")
+espera_med_norte_dia <- read_csv("base_de_dados/transformadas/espera_med_norte_dia.csv")
+espera_med_norte_dia$DIA <- factor(espera_med_norte_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+espera_med_norte_hora <- read_csv("base_de_dados/transformadas/espera_med_norte_hora.csv")
+espera_med_norte_hora$HORA <- as.numeric(espera_med_norte_hora$HORA)
+##Classificação
+espera_classificacao_norte_mes <- read_csv("base_de_dados/transformadas/espera_classificacao_norte_mes.csv")
+espera_classificacao_norte_dia <- read_csv("base_de_dados/transformadas/espera_classificacao_norte_dia.csv")
+espera_classificacao_norte_dia$DIA <- factor(espera_classificacao_norte_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+espera_classificacao_norte_hora <- read_csv("base_de_dados/transformadas/espera_classificacao_norte_hora.csv")
+espera_classificacao_norte_hora$HORA <- as.numeric(espera_classificacao_norte_hora$HORA)
+##Odontologia
+espera_odontologia_norte_mes <- read_csv("base_de_dados/transformadas/espera_odontologia_norte_mes.csv")
+espera_odontologia_norte_dia <- read_csv("base_de_dados/transformadas/espera_odontologia_norte_dia.csv")
+espera_odontologia_norte_dia$DIA <- factor(espera_odontologia_norte_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+espera_odontologia_norte_hora <- read_csv("base_de_dados/transformadas/espera_odontologia_norte_hora.csv")
+espera_odontologia_norte_hora$HORA <- as.numeric(espera_odontologia_norte_hora$HORA)
+
+
+
+#Norte
+##Médico
+espera_med_sul_mes <- read_csv("base_de_dados/transformadas/espera_med_sul_mes.csv")
+espera_med_sul_dia <- read_csv("base_de_dados/transformadas/espera_med_sul_dia.csv")
+espera_med_sul_dia$DIA <- factor(espera_med_sul_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+espera_med_sul_hora <- read_csv("base_de_dados/transformadas/espera_med_sul_hora.csv")
+espera_med_sul_hora$HORA <- as.numeric(espera_med_sul_hora$HORA)
+##Classificação
+espera_classificacao_sul_mes <- read_csv("base_de_dados/transformadas/espera_classificacao_sul_mes.csv")
+espera_classificacao_sul_dia <- read_csv("base_de_dados/transformadas/espera_classificacao_sul_dia.csv")
+espera_classificacao_sul_dia$DIA <- factor(espera_classificacao_sul_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+espera_classificacao_sul_hora <- read_csv("base_de_dados/transformadas/espera_classificacao_sul_hora.csv")
+espera_classificacao_sul_hora$HORA <- as.numeric(espera_classificacao_sul_hora$HORA)
+##Odontologia
+espera_odontologia_sul_mes <- read_csv("base_de_dados/transformadas/espera_odontologia_sul_mes.csv")
+espera_odontologia_sul_dia <- read_csv("base_de_dados/transformadas/espera_odontologia_sul_dia.csv")
+espera_odontologia_sul_dia$DIA <- factor(espera_odontologia_sul_dia$DIA, levels = c("Seg", "Ter", "Qua", "Qui", "Sex", "Sáb","Dom"))
+espera_odontologia_sul_hora <- read_csv("base_de_dados/transformadas/espera_odontologia_sul_hora.csv")
+espera_odontologia_sul_hora$HORA <- as.numeric(espera_odontologia_sul_hora$HORA)
+
+
+
+########################################################################################### 
+ui <- dashboardPage(skin = "blue",
+                    ########################################################################################### 
+                    dashboardHeader(title = "Sala de Situação da UPAs - Versão para Teste", titleWidth = 550),
+                    ########################################################################################### 
+                    dashboardSidebar(
+                      ########################################################################################### 
+                      sidebarMenu(
+                        menuItem("Apresentação", tabName = "apresentacao", icon = icon("heartbeat")),
+                        menuItem("UPA Norte", icon = icon("dashboard"),   
+                                 menuItem("Médicos", tabName = "medicos_norte"),
+                                        menuSubItem("Número de Atendimentos", tabName = "num_atd_medicos_norte"),
+                                        menuSubItem("Tempo de Atendimentos", tabName = "tempo_atd_medicos_norte"),
+                                        menuSubItem("Tempo de Espera", tabName = "tempo_esp_medicos_norte"),
+                                 menuItem("Classificação", tabName = "classificacao_norte"),                                 
+                                        menuSubItem("Número de Atendimentos", tabName = "num_atd_classificacao_norte"),
+                                        menuSubItem("Tempo de Atendimentos", tabName = "tempo_atd_classificacao_norte"),
+                                        menuSubItem("Tempo de Espera", tabName = "tempo_esp_classificacao_norte"),
+                                 menuItem("Odontólogos", tabName = "odontologia_norte"),                        
+                                        menuSubItem("Número de Atendimentos", tabName = "num_atd_odontologia_norte"),
+                                        menuSubItem("Tempo de Atendimentos", tabName = "tempo_atd_odontologia_norte"),
+                                        menuSubItem("Tempo de Espera", tabName = "tempo_esp_odontologia_norte")),
+                       menuItem("UPA Sul", icon = icon("dashboard"),   
+                                 menuItem("Médicos", tabName = "medicos_sul"),
+                                        menuSubItem("Número de Atendimentos", tabName = "num_atd_medicos_sul"),
+                                        menuSubItem("Tempo de Atendimentos", tabName = "tempo_atd_medicos_sul"),
+                                        menuSubItem("Tempo de Espera", tabName = "tempo_esp_medicos_sul"),
+                                 menuItem("Classificação", tabName = "classificacao_sul"),                                 
+                                        menuSubItem("Número de Atendimentos", tabName = "num_atd_classificacao_sul"),
+                                        menuSubItem("Tempo de Atendimentos", tabName = "tempo_atd_classificacao_sul"),
+                                        menuSubItem("Tempo de Espera", tabName = "tempo_esp_classificacao_sul"),
+                                 menuItem("Odontólogos", tabName = "odontologia_sul"),                        
+                                        menuSubItem("Número de Atendimentos", tabName = "num_atd_odontologia_sul"),
+                                        menuSubItem("Tempo de Atendimentos", tabName = "tempo_atd_odontologia_sul"),
+                                        menuSubItem("Tempo de Espera", tabName = "tempo_esp_odontologia_sul")),
+                        menuItem("Instruções", icon = icon("question-circle"),
+                                 href = "https://github.com/analisededadosemsaudefloripa/saladesituacao/wiki/Instru%C3%A7%C3%B5es-para-Utiliza%C3%A7%C3%A3o-das-Salas-de-Situa%C3%A7%C3%A3o-em-Sa%C3%BAde"),
+                        #menuItem("Dados", icon = icon("database"),
+                                 #href = "http://floripadadosabertos.univille.br/"),
+                        menuItem("Código-fonte", icon = icon("code"), 
+                                 href = "https://github.com/analisededadosemsaudefloripa/saladesituacao/blob/master/upas"),
+                        menuItem("Licença de Uso", icon = icon("cc"), 
+                                 href = "https://github.com/analisededadosemsaudefloripa/sala_situacao_upas/blob/master/LICENSE")
+                      )
+                    ),
+                    ########################################################################################### 
+                    dashboardBody(
+                      tabItems(
+                        ########################################################################################### 
+                        #Apresentação
+                        tabItem(tabName = "apresentacao", h2("Pronto Atendimento em Florianópolis"),
+                                fluidRow(
+                                  mainPanel(
+                                    p("O serviço de pronto atendimento desenvolvido pela Secretaria Municipal de Saúde de Florianópolis se dá por meio de duas Unidades de Pronto Atendimento - UPA"),
+                                    p("A UPA Norte instalada no bairro Vargem Grande e a UPA Sul no bairro Rio Tavares.")
+                                  )
+                                ),
+                                fluidRow(
+                                  box(title = "Mapa", status = "primary", width=12, solidHeader = T, collapsible = T, leafletOutput("localizacao_upas", height = 400))
+                                )
+                        ),
+                        ###########################################################################################
+                        #UPA Norte
+                        ###########################################################################################                         
+                        
+                        ###########################################################################################                         
+                        #Dashboard Médicos na UPA Norte                                                         
+                        ###########################################################################################
+                        ###########################################################################################                         
+                        #Número                                                    
+                        ###########################################################################################
+                        tabItem(tabName = "num_atd_medicos_norte", h2("Número de Atendimentos Médicos na UPA Norte"),
+                                
+                                fluidRow(
+                                  box(selectInput(
+                                    inputId="num_atd_medicos_norte_especialidade",
+                                    label="Selecione a Especialidade:",
+                                    choices=list("Pediatria" = "Pediatria", "Clínica" = "Clínica",
+                                                 "Cirurgia" = "Cirurgia", "Total" = "Total", "Comparação" = "Comparação"),
+                                    selected="Total"),
+                                    width = 12, status = "primary")
+                                ),
+                                
+                                fluidRow(
+                                  tabBox(title = "Número de Atendimentos Médicos na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_medicos_norte_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_medicos_norte_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_medicos_norte_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana de Atendimentos Médicos na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_medicos_norte_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_medicos_norte_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_medicos_norte_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana de Atendimentos Médicos na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_medicos_norte_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_medicos_norte_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_medicos_norte_hora_info"))
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################                         
+                        #Tempo de atendimentos                                                         
+                        ###########################################################################################
+                        tabItem(tabName = "tempo_atd_medicos_norte", h2("Tempo dos Atendimentos Médicos na UPA Norte"),
+                                
+                                fluidRow(
+                                  box(selectInput(
+                                    inputId="tempo_atd_medicos_norte_especialidade",
+                                    label="Selecione a Especialidade:",
+                                    choices=list("Pediatria" = "Pediatria", "Clínica" = "Clínica",
+                                                 "Cirurgia" = "Cirurgia", "Total" = "Total", "Comparação" = "Comparação"),
+                                    selected="Total"),
+                                    width = 12, status = "primary")
+                                ),
+                                
+                                fluidRow(
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Atendimentos Médicos na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_medicos_norte_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_medicos_norte_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_medicos_norte_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Atendimentos Médicos na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_medicos_norte_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_medicos_norte_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_medicos_norte_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) Atendimentos Médicos na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_medicos_norte_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_medicos_norte_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_medicos_norte_hora_info"))
+                                         
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################                         
+                        #Tempo de espera                                                         
+                        ###########################################################################################
+                        tabItem(tabName = "tempo_esp_medicos_norte", h2("Tempo de Espera para Atendimentos Médicos na UPA Norte"),
+                                
+                                fluidRow(
+                                  box(selectInput(
+                                    inputId="tempo_esp_medicos_norte_especialidade",
+                                    label="Selecione a Especialidade:",
+                                    choices=list("Pediatria" = "Pediatria", "Clínica" = "Clínica",
+                                                 "Cirurgia" = "Cirurgia", "Total" = "Total", "Comparação" = "Comparação"),
+                                    selected="Total"),
+                                    width = 12, status = "primary")
+                                ),
+                                
+                                fluidRow(
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Atendimentos Médicos na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_medicos_norte_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_medicos_norte_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_medicos_norte_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Atendimentos Médicos na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_medicos_norte_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_medicos_norte_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_medicos_norte_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Atendimentos Médicos na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_medicos_norte_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_medicos_norte_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_medicos_norte_hora_info"))
+                                         
+                                         
+                                  )
+                                )
+                        ),
+                        
+                        
+                        
+                        ###########################################################################################
+                        #Dashboard Classificação de Risco na UPA Norte 
+                        ###########################################################################################
+                        ###########################################################################################                         
+                        #Número                                                    
+                        ###########################################################################################
+                        tabItem(tabName = "num_atd_classificacao_norte", h2("Número de Classificações de Risco na UPA Norte"),
+                                
+                                fluidRow(
+                                  box(selectInput(
+                                    inputId="num_atd_classificacao_norte_tipo",
+                                    label="Selecione a Especialidade:",
+                                    choices=list("Ambulatorial" = "Ambulatorial", "Intercorrência" = "Intercorrência",
+                                                 "Urgência" = "Urgência","Emergência" = "Emergência", "Total" = "Total", "Comparação" = "Comparação"),
+                                    selected="Total"),
+                                    width = 12, status = "primary")
+                                ),
+                                
+                                fluidRow(
+                                  tabBox(title = "Número de Classificações de Risco na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_classificacao_norte_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_classificacao_norte_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_classificacao_norte_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana de Classificações de Risco na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_classificacao_norte_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_classificacao_norte_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_classificacao_norte_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana de Classificações de Risco na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_classificacao_norte_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_classificacao_norte_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_classificacao_norte_hora_info"))
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################                         
+                        #Tempo de atendimentos                                                         
+                        ###########################################################################################
+                        tabItem(tabName = "tempo_atd_classificacao_norte", h2("Tempo das Classificações de Risco na UPA Norte"),
+                                
+                                fluidRow(
+                                  box(selectInput(
+                                    inputId="tempo_atd_classificacao_norte_tipo",
+                                    label="Selecione a Especialidade:",
+                                    choices=list("Ambulatorial" = "Ambulatorial", "Intercorrência" = "Intercorrência",
+                                                 "Urgência" = "Urgência","Emergência" = "Emergência", "Total" = "Total", "Comparação" = "Comparação"),
+                                    selected="Total"),
+                                    width = 12, status = "primary")
+                                ),
+                                
+                                fluidRow(
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Classificações de Risco na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_classificacao_norte_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_classificacao_norte_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_classificacao_norte_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Classificações de Risco na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_classificacao_norte_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_classificacao_norte_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_classificacao_norte_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) Classificações de Risco na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_classificacao_norte_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_classificacao_norte_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_classificacao_norte_hora_info"))
+                                         
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################                         
+                        #Tempo de espera                                                         
+                        ###########################################################################################
+                        tabItem(tabName = "tempo_esp_classificacao_norte", h2("Tempo de Espera para Classificações de Risco na UPA Norte"),
+                                
+                                fluidRow(
+                                  box(selectInput(
+                                    inputId="tempo_esp_classificacao_norte_tipo",
+                                    label="Selecione a Especialidade:",
+                                    choices=list("Ambulatorial" = "Ambulatorial", "Intercorrência" = "Intercorrência",
+                                                 "Urgência" = "Urgência","Emergência" = "Emergência", "Total" = "Total", "Comparação" = "Comparação"),
+                                    selected="Total"),
+                                    width = 12, status = "primary")
+                                ),
+                                
+                                fluidRow(
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Classificações de Risco na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_classificacao_norte_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_classificacao_norte_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_classificacao_norte_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Classificações de Risco na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_classificacao_norte_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_classificacao_norte_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_classificacao_norte_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Classificações de Risco na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_classificacao_norte_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_classificacao_norte_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_classificacao_norte_hora_info"))
+                                         
+                                         
+                                  )
+                                )
+                        ),
+
+                        
+                        ###########################################################################################
+                        #Dashboard Odontologia na UPA Norte 
+                        ###########################################################################################
+                        ###########################################################################################                         
+                        #Número                                                    
+                        ###########################################################################################
+                        tabItem(tabName = "num_atd_odontologia_norte", h2("Número de Atendimentos Odontológicos na UPA Norte"),
+ 
+                                fluidRow(
+                                  tabBox(title = "Número de Atendimentos Odontológicos na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_odontologia_norte_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_odontologia_norte_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_odontologia_norte_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana de Atendimentos Odontológicos na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_odontologia_norte_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_odontologia_norte_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_odontologia_norte_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana de Atendimentos Odontológicos na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_odontologia_norte_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_odontologia_norte_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_odontologia_norte_hora_info"))
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################                         
+                        #Tempo de atendimentos                                                         
+                        ###########################################################################################
+                        tabItem(tabName = "tempo_atd_odontologia_norte", h2("Tempo dos Atendimentos Odontológicos na UPA Norte"),
+                               
+                                fluidRow(
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Atendimentos Odontológicos na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_odontologia_norte_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_odontologia_norte_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_odontologia_norte_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Atendimentos Odontológicos na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_odontologia_norte_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_odontologia_norte_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_odontologia_norte_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) Atendimentos Odontológicos na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_odontologia_norte_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_odontologia_norte_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_odontologia_norte_hora_info"))
+                                         
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################                         
+                        #Tempo de espera                                                         
+                        ###########################################################################################
+                        tabItem(tabName = "tempo_esp_odontologia_norte", h2("Tempo de Espera para Atendimentos Médicos na UPA Norte"),
+                                
+                                fluidRow(
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Atendimentos Médicos na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_odontologia_norte_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_odontologia_norte_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_odontologia_norte_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Atendimentos Médicos na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_odontologia_norte_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_odontologia_norte_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_odontologia_norte_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Atendimentos Médicos na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_odontologia_norte_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_odontologia_norte_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_odontologia_norte_hora_info"))
+                                         
+                                         
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################
+                        #UPA Sul
+                        ###########################################################################################                         
+
+                        ###########################################################################################                         
+                        #Dashboard Médicos na UPA Sul                                                         
+                        ###########################################################################################
+                        ###########################################################################################                         
+                        #Número                                                    
+                        ###########################################################################################
+                        tabItem(tabName = "num_atd_medicos_sul", h2("Número de Atendimentos Médicos na UPA Sul"),
+                                
+                                fluidRow(
+                                  box(selectInput(
+                                    inputId="num_atd_medicos_sul_especialidade",
+                                    label="Selecione a Especialidade:",
+                                    choices=list("Pediatria" = "Pediatria", "Clínica" = "Clínica",
+                                                 "Cirurgia" = "Cirurgia", "Total" = "Total", "Comparação" = "Comparação"),
+                                    selected="Total"),
+                                    width = 12, status = "primary")
+                                ),
+                                
+                                fluidRow(
+                                  tabBox(title = "Número de Atendimentos Médicos na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_medicos_sul_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_medicos_sul_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_medicos_sul_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana de Atendimentos Médicos na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_medicos_sul_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_medicos_sul_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_medicos_sul_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana de Atendimentos Médicos na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_medicos_sul_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_medicos_sul_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_medicos_sul_hora_info"))
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################                         
+                        #Tempo de atendimentos                                                         
+                        ###########################################################################################
+                        tabItem(tabName = "tempo_atd_medicos_sul", h2("Tempo dos Atendimentos Médicos na UPA Sul"),
+                                
+                                fluidRow(
+                                  box(selectInput(
+                                    inputId="tempo_atd_medicos_sul_especialidade",
+                                    label="Selecione a Especialidade:",
+                                    choices=list("Pediatria" = "Pediatria", "Clínica" = "Clínica",
+                                                 "Cirurgia" = "Cirurgia", "Total" = "Total", "Comparação" = "Comparação"),
+                                    selected="Total"),
+                                    width = 12, status = "primary")
+                                ),
+                                
+                                fluidRow(
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Atendimentos Médicos na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_medicos_sul_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_medicos_sul_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_medicos_sul_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Atendimentos Médicos na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_medicos_sul_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_medicos_sul_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_medicos_sul_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) Atendimentos Médicos na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_medicos_sul_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_medicos_sul_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_medicos_sul_hora_info"))
+                                         
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################                         
+                        #Tempo de espera                                                         
+                        ###########################################################################################
+                        tabItem(tabName = "tempo_esp_medicos_sul", h2("Tempo de Espera para Atendimentos Médicos na UPA Sul"),
+                                
+                                fluidRow(
+                                  box(selectInput(
+                                    inputId="tempo_esp_medicos_sul_especialidade",
+                                    label="Selecione a Especialidade:",
+                                    choices=list("Pediatria" = "Pediatria", "Clínica" = "Clínica",
+                                                 "Cirurgia" = "Cirurgia", "Total" = "Total", "Comparação" = "Comparação"),
+                                    selected="Total"),
+                                    width = 12, status = "primary")
+                                ),
+                                
+                                fluidRow(
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Atendimentos Médicos na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_medicos_sul_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_medicos_sul_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_medicos_sul_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Atendimentos Médicos na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_medicos_sul_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_medicos_sul_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_medicos_sul_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Atendimentos Médicos na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_medicos_sul_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_medicos_sul_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_medicos_sul_hora_info"))
+                                         
+                                         
+                                  )
+                                )
+                        ),
+                        
+                        
+                        
+                        ###########################################################################################
+                        #Dashboard Classificação de Risco na UPA Sul 
+                        ###########################################################################################
+                        ###########################################################################################                         
+                        #Número                                                    
+                        ###########################################################################################
+                        tabItem(tabName = "num_atd_classificacao_sul", h2("Número de Classificações de Risco na UPA Sul"),
+                                
+                                fluidRow(
+                                  box(selectInput(
+                                    inputId="num_atd_classificacao_sul_tipo",
+                                    label="Selecione a Especialidade:",
+                                    choices=list("Ambulatorial" = "Ambulatorial", "Intercorrência" = "Intercorrência",
+                                                 "Urgência" = "Urgência","Emergência" = "Emergência", "Total" = "Total", "Comparação" = "Comparação"),
+                                    selected="Total"),
+                                    width = 12, status = "primary")
+                                ),
+                                
+                                fluidRow(
+                                  tabBox(title = "Número de Classificações de Risco na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_classificacao_sul_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_classificacao_sul_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_classificacao_sul_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana de Classificações de Risco na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_classificacao_sul_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_classificacao_sul_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_classificacao_sul_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana de Classificações de Risco na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_classificacao_sul_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_classificacao_sul_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_classificacao_sul_hora_info"))
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################                         
+                        #Tempo de atendimento                                                        
+                        ###########################################################################################
+                        tabItem(tabName = "tempo_atd_classificacao_sul", h2("Tempo das Classificações de Risco na UPA Sul"),
+                                
+                                fluidRow(
+                                  box(selectInput(
+                                    inputId="tempo_atd_classificacao_sul_tipo",
+                                    label="Selecione a Especialidade:",
+                                    choices=list("Ambulatorial" = "Ambulatorial", "Intercorrência" = "Intercorrência",
+                                                 "Urgência" = "Urgência","Emergência" = "Emergência", "Total" = "Total", "Comparação" = "Comparação"),
+                                    selected="Total"),
+                                    width = 12, status = "primary")
+                                ),
+                                
+                                fluidRow(
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Classificações de Risco na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_classificacao_sul_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_classificacao_sul_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_classificacao_sul_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Classificações de Risco na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_classificacao_sul_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_classificacao_sul_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_classificacao_sul_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) Classificações de Risco na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_classificacao_sul_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_classificacao_sul_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_classificacao_sul_hora_info"))
+                                         
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################                         
+                        #Tempo de espera                                                         
+                        ###########################################################################################
+                        tabItem(tabName = "tempo_esp_classificacao_sul", h2("Tempo de Espera para Classificações de Risco na UPA Sul"),
+                                
+                                fluidRow(
+                                  box(selectInput(
+                                    inputId="tempo_esp_classificacao_sul_tipo",
+                                    label="Selecione a Especialidade:",
+                                    choices=list("Ambulatorial" = "Ambulatorial", "Intercorrência" = "Intercorrência",
+                                                 "Urgência" = "Urgência","Emergência" = "Emergência", "Total" = "Total", "Comparação" = "Comparação"),
+                                    selected="Total"),
+                                    width = 12, status = "primary")
+                                ),
+                                
+                                fluidRow(
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Classificações de Risco na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_classificacao_sul_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_classificacao_sul_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_classificacao_sul_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Classificações de Risco na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_classificacao_sul_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_classificacao_sul_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_classificacao_sul_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Classificações de Risco na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_classificacao_sul_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_classificacao_sul_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_classificacao_sul_hora_info"))
+                                         
+                                         
+                                  )
+                                )
+                        ),
+
+                        
+                        ###########################################################################################
+                        #Dashboard Odontologia na UPA Sul 
+                        ###########################################################################################
+                        ###########################################################################################                         
+                        #Número                                                    
+                        ###########################################################################################
+                        tabItem(tabName = "num_atd_odontologia_sul", h2("Número de Atendimentos Odontológicos na UPA Sul"),
+ 
+                                fluidRow(
+                                  tabBox(title = "Número de Atendimentos Odontológicos na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_odontologia_sul_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_odontologia_sul_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_odontologia_sul_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana de Atendimentos Odontológicos na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_odontologia_sul_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_odontologia_sul_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_odontologia_sul_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana de Atendimentos Odontológicos na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "num_atd_odontologia_sul_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("num_atd_odontologia_sul_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("num_atd_odontologia_sul_hora_info"))
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################                         
+                        #Tempo de atendimentos                                                         
+                        ###########################################################################################
+                        tabItem(tabName = "tempo_atd_odontologia_sul", h2("Tempo dos Atendimentos Odontológicos na UPA Sul"),
+                               
+                                fluidRow(
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Atendimentos Odontológicos na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_odontologia_sul_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_odontologia_sul_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_odontologia_sul_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Atendimentos Odontológicos na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_odontologia_sul_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_odontologia_sul_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_odontologia_sul_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) Atendimentos Odontológicos na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_atd_odontologia_sul_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_atd_odontologia_sul_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_atd_odontologia_sul_hora_info"))
+                                         
+                                  )
+                                )
+                        ),
+                        
+                        ###########################################################################################                         
+                        #Tempo de espera                                                         
+                        ###########################################################################################
+                        tabItem(tabName = "tempo_esp_odontologia_sul", h2("Tempo de Espera para Atendimentos Odontológicos na UPA Sul"),
+                                
+                                fluidRow(
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Atendimentos Odontológicos na UPA por Mês", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_odontologia_sul_mes_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_odontologia_sul_mes_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_odontologia_sul_mes_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Atendimentos Odontológicos na UPA por Dia de Semana", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_odontologia_sul_dia_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_odontologia_sul_dia_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_odontologia_sul_dia_info"))
+                                  ),
+                                  tabBox(title = "Mediana do Tempo (em Minutos) de Espera por Atendimentos Odontológicos na UPA por Hora do Dia", width=12,
+                                         tabPanel("Gráfico", plotlyOutput(outputId = "tempo_esp_odontologia_sul_hora_plot")),
+                                         tabPanel("Dados", dataTableOutput("tempo_esp_odontologia_sul_hora_tab")),
+                                         tabPanel("Sobre o Indicador", htmlOutput("tempo_esp_odontologia_sul_hora_info"))
+                                         
+                                         
+                                  )
+                                )
+                        )
+                        
+                        ###########################################################################################  
+                      )  
+                    )
+)
+
+########################################################################################### 
+server <- function(input, output, session) {
+  ########################################################################################### 
+  #Página inicial
+  #Mapa das unidades
+  output$localizacao_upas<- renderLeaflet({
+    leaflet(data = dados_upas) %>% addTiles() %>%
+      addMarkers(~X, ~Y, popup = ~htmlEscape(DESCRICAO))
+  })
+  
+  ###########################################################################################
+  #UPA Norte
+  ###########################################################################################
+  
+  ###########################################################################################
+  #Dashboard Médicos UPA Norte  
+  ###########################################################################################
+  ###########################################################################################                         
+  #Número                                                    
+  ###########################################################################################
+
+  #gráfico de atendimentos médicos no norte por mês
+  output$num_atd_medicos_norte_mes_plot <- renderPlotly({
+    
+    
+    if(input$num_atd_medicos_norte_especialidade == "Comparação"){
+      
+      medicos_norte_mes <- atendimentos_med_norte_mes %>%
+       filter(VARIAVEL == "PRODUZIDO" | is.na(VARIAVEL)) #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+        
+      
+      a<-ggplot(medicos_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+        scale_y_continuous(breaks = c(0, 5000,10000,15000))
+      
+      
+      
+    }else if (input$num_atd_medicos_norte_especialidade == "Total"){
+      
+      medicos_norte_mes <- atendimentos_med_norte_mes  %>%
+       filter(ESPECIALIDADE == "Total") %>%
+       filter(VARIAVEL == "PRODUZIDO") #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+       
+       
+      a<-ggplot(medicos_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+        geom_hline(yintercept = 10125,col = "red", size = 0.8)+
+        geom_hline(yintercept = 9000, col = "red", size = 0.2)+
+        geom_hline(yintercept = 7875, col = "red", size = 0.2)+
+        geom_hline(yintercept = 6750, col = "red", size = 0.2)+
+        geom_hline(yintercept = 5625, col = "red", size = 0.2)+
+        geom_hline(yintercept = 4500, col = "red", size = 0.2)+
+        geom_hline(yintercept = 3375, col = "red", size = 0.2)+
+        geom_hline(yintercept = 2250, col = "red", size = 0.2)+
+        scale_y_continuous(breaks = c(0, 2250,3375,4500,5625,6750,7875,9000,10125,11000,12000,13000,14000,15000),limits=c(0,16000))
+       
+      
+    }else{
+      
+      medicos_norte_mes <- atendimentos_med_norte_mes %>%
+       filter(ESPECIALIDADE == input$num_atd_medicos_norte_especialidade)  
+      
+      a<-ggplot(medicos_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+        scale_y_continuous(breaks = c(0, 5000,10000,15000))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de atendimentos médicos no norte por mês
+  output$num_atd_medicos_norte_mes_tab <- renderDataTable({
+    
+    if(input$num_atd_medicos_norte_especialidade == "Comparação"){
+      
+      medicos_norte_mes <- atendimentos_med_norte_mes %>%
+       filter(VARIAVEL == "PRODUZIDO" | is.na(VARIAVEL)) #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+        
+      
+
+    }else if (input$num_atd_medicos_norte_especialidade == "Total"){
+      
+      medicos_norte_mes <- atendimentos_med_norte_mes  %>%
+       filter(ESPECIALIDADE == "Total")%>%
+       filter(VARIAVEL == "PRODUZIDO") #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+          
+      
+    }else{
+      
+      medicos_norte_mes <- atendimentos_med_norte_mes %>%
+       filter(ESPECIALIDADE == input$num_atd_medicos_norte_especialidade)  
+      
+
+    medicos_norte_mes}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de atendimentos médicos no norte por mês
+  output$num_atd_medicos_norte_mes_info <- renderText({
+    
+    paste("<b>A.01)Número de Atendimentos Médicos na Clínica da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de atendimentos médicos na clínica da UPA, por Mês" , "<br>",
+          "<b>A.02)Número de Atendimentos Médicos na Pediatria da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de atendimentos médicos na pediatria da UPA, por Mês" , "<br>",
+          "<b>A.03)Número de Atendimentos Médicos na Cirurgia da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de atendimentos médicos na cirurgia da UPA, por Mês" , "<br>",
+          "<b>A.04)Número Total de Atendimentos Médicos da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de atendimentos médicos da UPA, por Mês" , "<br>",
+          "<b>A.05)Número de Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Mês" , "<br>")
+    
+    
+  })
+  
+  
+  
+  #gráfico de atendimentos médicos no norte por dia da semana
+  output$num_atd_medicos_norte_dia_plot <- renderPlotly({
+    
+    
+    if(input$num_atd_medicos_norte_especialidade == "Comparação"){
+      
+      medicos_norte_dia <- atendimentos_med_norte_dia
+      
+      a<-ggplot(medicos_norte_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      medicos_norte_dia <- atendimentos_med_norte_dia %>% 
+        filter(ESPECIALIDADE == input$num_atd_medicos_norte_especialidade)  
+      
+      a<-ggplot(medicos_norte_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de atendimentos médicos no norte por dia da semana
+  output$num_atd_medicos_norte_dia_tab <- renderDataTable({
+    
+    
+    if(input$num_atd_medicos_norte_especialidade == "Comparação"){
+      
+      medicos_norte_dia <- atendimentos_med_norte_dia
+
+    }else{
+      
+      medicos_norte_dia <- atendimentos_med_norte_dia %>% 
+        filter(ESPECIALIDADE == input$num_atd_medicos_norte_especialidade)  
+      
+     medicos_norte_dia}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de atendimentos médicos no norte por dia
+  output$num_atd_medicos_norte_dia_info <- renderText({
+    
+    paste("<b>A.06)Mediana de Atendimentos Médicos na Clínica da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na clínica da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.07)Mediana de Atendimentos Médicos na Pediatria da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na pediatria da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.08)Mediana de Atendimentos Médicos na Cirurgia da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na cirurgia da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.09)Mediana de Atendimentos Médicos da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.10)Mediana de Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Dia da Semana, nos últimos 6 meses" , "<br>"          )
+    
+    
+    
+  })
+  
+  
+  #gráfico de atendimentos médicos no norte por hora do dia
+  output$num_atd_medicos_norte_hora_plot <- renderPlotly({
+    
+    if(input$num_atd_medicos_norte_especialidade == "Comparação"){
+      
+      medicos_norte_hora <- atendimentos_med_norte_hora
+      
+      a<-ggplot(medicos_norte_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      medicos_norte_hora <- atendimentos_med_norte_hora %>% 
+        filter(ESPECIALIDADE == input$num_atd_medicos_norte_especialidade)  
+      
+      a<-ggplot(medicos_norte_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      }
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de atendimentos médicos no norte por hora do dia
+  output$num_atd_medicos_norte_hora_tab <- renderDataTable({
+    
+    if(input$num_atd_medicos_norte_especialidade == "Comparação"){
+      
+      medicos_norte_hora <- atendimentos_med_norte_hora
+      
+    }else{
+      
+      medicos_norte_hora <- atendimentos_med_norte_hora %>% 
+        filter(ESPECIALIDADE == input$num_atd_medicos_norte_especialidade)  
+      
+    medicos_norte_hora}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de atendimentos médicos no norte por hora do dia
+  output$num_atd_medicos_norte_hora_info <- renderText({
+    
+    paste("<b>A.11)Mediana de Atendimentos Médicos na Clínica da UPA, por Hora da Saúde</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na clínica da UPA, por Hora da Saúde, nos últimos 6 meses" , "<br>",
+          "<b>A.12)Mediana de Atendimentos Médicos na Pediatria da UPA, por Hora da Saúde</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na pediatria da UPA, por Hora da Saúde, nos últimos 6 meses" , "<br>",
+          "<b>A.13)Mediana de Atendimentos Médicos na Cirurgia da UPA, por Hora da Saúde</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na cirurgia da UPA, por Hora da Saúde, nos últimos 6 meses" , "<br>",
+          "<b>A.14)Mediana de Atendimentos Médicos da UPA, por Hora da Saúde</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos da UPA, por Hora da Saúde, nos últimos 6 meses" , "<br>",
+          "<b>A.15)Mediana de Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Hora da Saúde</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Hora da Saúde, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O denominador equivale ao número de dias do período avaliado" , "<br>")   
+    
+  })
+  
+ ###########################################################################################                         
+ #Tempo de atendimentos                                                         
+ ###########################################################################################
+  
+  #gráfico de tempo de atendimentos médicos no norte por mês
+  output$tempo_atd_medicos_norte_mes_plot <- renderPlotly({
+    
+    
+    
+    if(input$tempo_atd_medicos_norte_especialidade == "Comparação"){
+                                            
+      tempo_med_norte_mes <- tempo_med_norte_mes
+      
+      a<-ggplot(tempo_med_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      tempo_med_norte_mes <- tempo_med_norte_mes %>% 
+        filter(ESPECIALIDADE == input$tempo_atd_medicos_norte_especialidade)  
+      
+      a<-ggplot(tempo_med_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de de tempo de atendimentos médicos no norte por mês
+  output$tempo_atd_medicos_norte_mes_tab <- renderDataTable({
+   if(input$tempo_atd_medicos_norte_especialidade == "Comparação"){
+      
+      tempo_med_norte_mes <- tempo_med_norte_mes
+  
+    }else{
+      
+      tempo_med_norte_mes <- tempo_med_norte_mes %>% 
+        filter(ESPECIALIDADE == input$tempo_atd_medicos_norte_especialidade)}
+     
+    tempo_med_norte_mes
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de  tempo de atendimentos médicos no norte por mês
+  output$tempo_atd_medicos_norte_mes_info <- renderText({
+    
+    paste("<b>A.16)Mediana do Tempo de Atendimentos Médicos na Clínica da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de atendimentos médicos na clínica da UPA, por Mês" , "<br>",
+          "<b>A.17)Mediana do Tempo de Atendimentos Médicos na Pediatria da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na pediatria da UPA, por Mês" , "<br>",
+          "<b>A.18)Mediana do Tempo de Atendimentos Médicos na Cirurgia da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na cirurgia da UPA, por Mês" , "<br>",
+          "<b>A.19)Mediana do Tempo Total de Atendimentos Médicos da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos da UPA, por Mês" , "<br>",
+          "<b>A.20)Mediana do Tempo de Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Mês" , "<br>")
+    
+    
+  })
+  
+  #gráfico de tempo de atendimentos médicos no norte por dia da semana
+  output$tempo_atd_medicos_norte_dia_plot <- renderPlotly({
+    
+     if(input$tempo_atd_medicos_norte_especialidade == "Comparação"){
+      
+      tempo_med_norte_dia <- tempo_med_norte_dia
+      
+      a<-ggplot(tempo_med_norte_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      tempo_med_norte_dia <- tempo_med_norte_dia %>% 
+        filter(ESPECIALIDADE == input$tempo_atd_medicos_norte_especialidade)  
+      
+      a<-ggplot(tempo_med_norte_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de atendimentos médicos no norte por dia da semana
+  output$tempo_atd_medicos_norte_dia_tab <- renderDataTable({
+    
+    if(input$tempo_atd_medicos_norte_especialidade == "Comparação"){
+      
+      tempo_med_norte_dia <- tempo_med_norte_dia
+      
+    }else{
+      
+      tempo_med_norte_dia <- tempo_med_norte_dia %>% 
+       filter(ESPECIALIDADE == input$tempo_atd_medicos_norte_especialidade)}
+    
+    tempo_med_norte_dia
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de atendimentos médicos no norte por dia
+  output$tempo_atd_medicos_norte_dia_info <- renderText({
+    
+    paste("<b>A.21)Mediana do Tempo de Atendimentos Médicos na Clínica da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de atendimentos médicos na clínica da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.22)Mediana do Tempo de Atendimentos Médicos na Pediatria da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na pediatria da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.23)Mediana do Tempo de Atendimentos Médicos na Cirurgia da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na cirurgia da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.24)Mediana do Tempo Total de Atendimentos Médicos da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.25)Mediana do Tempo de Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Dia da Semana, nos últimos 6 meses")
+    
+    
+    
+  })
+  
+  
+  #gráfico de tempo de atendimentos médicos no norte por hora do dia
+  output$tempo_atd_medicos_norte_hora_plot <- renderPlotly({
+    
+    
+    if(input$tempo_atd_medicos_norte_especialidade == "Comparação"){
+      
+      tempo_med_norte_hora <- tempo_med_norte_hora
+      
+      a<-ggplot(tempo_med_norte_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      tempo_med_norte_hora <- tempo_med_norte_hora %>% 
+        filter(ESPECIALIDADE == input$tempo_atd_medicos_norte_especialidade)  
+      
+      a<-ggplot(tempo_med_norte_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de atendimentos médicos no norte por hora do dia
+  output$tempo_atd_medicos_norte_hora_tab <- renderDataTable({
+    
+    if(input$tempo_atd_medicos_norte_especialidade == "Comparação"){
+      
+      tempo_med_norte_hora <- tempo_med_norte_hora
+      
+    }else{
+      
+      tempo_med_norte_hora <- tempo_med_norte_hora %>% 
+        filter(ESPECIALIDADE == input$tempo_atd_medicos_norte_especialidade)  
+      
+    }
+                                          
+    tempo_med_norte_hora
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de atendimentos médicos no norte por hora do dia
+  output$tempo_atd_medicos_norte_hora_info <- renderText({
+    
+    paste("<b>A.26)Mediana do Tempo de Atendimentos Médicos na Clínica da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de atendimentos médicos na clínica da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>A.27)Mediana do Tempo de Atendimentos Médicos na Pediatria da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na pediatria da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>A.28)Mediana do Tempo de Atendimentos Médicos na Cirurgia da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na cirurgia da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>A.29)Mediana do Tempo Total de Atendimentos Médicos da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>A.30)Mediana do Tempo de Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Hora do Dia, nos últimos 6 meses")
+  })
+  
+ ###########################################################################################                         
+ #Tempo de espera                                                         
+ ###########################################################################################
+
+  #gráfico de tempo de espera por de atendimentos médicos no norte por mês
+  output$tempo_esp_medicos_norte_mes_plot <- renderPlotly({
+    
+    if(input$tempo_esp_medicos_norte_especialidade == "Comparação"){
+                                            
+     espera_med_norte_mes <- espera_med_norte_mes
+      
+      a<-ggplot(espera_med_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      espera_med_norte_mes <- espera_med_norte_mes %>% 
+        filter(ESPECIALIDADE == input$tempo_esp_medicos_norte_especialidade)  
+      
+      a<-ggplot(espera_med_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de espera por atendimentos médicos no norte por mês
+  output$tempo_esp_medicos_norte_mes_tab <- renderDataTable({
+    
+    if(input$tempo_esp_medicos_norte_especialidade == "Comparação"){
+                                            
+     espera_med_norte_mes <- espera_med_norte_mes
+      
+    }else{
+      
+      espera_med_norte_mes <- espera_med_norte_mes %>% 
+        filter(ESPECIALIDADE == input$tempo_esp_medicos_norte_especialidade)}  
+      
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de  tempo de espera por atendimentos médicos no norte por mês
+  output$tempo_esp_medicos_norte_mes_info <- renderText({
+    
+    paste("<b>A.31)Mediana do Tempo de Espera por Atendimentos Médicos na Clínica da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera por atendimentos médicos na clínica da UPA, por Mês" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.32)Mediana do Tempo de Espera por Atendimentos Médicos na Pediatria da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na pediatria da UPA, por Mês" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.33)Mediana do Tempo de Espera por Atendimentos Médicos na Cirurgia da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na cirurgia da UPA, por Mês" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.34)Mediana do Tempo Total de Espera por Atendimentos Médicos da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos da UPA, por Mês" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.35)Mediana do Tempo de Espera por Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Mês" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+    
+  })
+  
+  #gráfico de tempo de espera por atendimentos médicos no norte por dia da semana
+  output$tempo_esp_medicos_norte_dia_plot <- renderPlotly({
+    
+    
+    if(input$tempo_esp_medicos_norte_especialidade == "Comparação"){
+      
+      espera_med_norte_dia <- espera_med_norte_dia
+      
+      a<-ggplot(espera_med_norte_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      espera_med_norte_dia <- espera_med_norte_dia %>% 
+        filter(ESPECIALIDADE == input$tempo_esp_medicos_norte_especialidade)  
+      
+      a<-ggplot(espera_med_norte_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de espera por atendimentos médicos no norte por dia da semana
+  output$tempo_esp_medicos_norte_dia_tab <- renderDataTable({
+    
+    if(input$tempo_esp_medicos_norte_especialidade == "Comparação"){
+      
+      espera_med_norte_dia <- espera_med_norte_dia
+      
+   }else{
+      
+      espera_med_norte_dia <- espera_med_norte_dia %>% 
+        filter(ESPECIALIDADE == input$tempo_esp_medicos_norte_especialidade)}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de espera por tempo de atendimentos médicos no norte por dia
+  output$tempo_esp_medicos_norte_dia_info <- renderText({
+    
+    paste("<b>A.36)Mediana do Tempo de Espera por Atendimentos Médicos na Clínica da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera por atendimentos médicos na clínica da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.37)Mediana do Tempo de Espera por Atendimentos Médicos na Pediatria da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na pediatria da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.38)Mediana do Tempo de Espera por Atendimentos Médicos na Cirurgia da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na cirurgia da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.39)Mediana do Tempo Total de Espera por Atendimentos Médicos da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.40)Mediana do Tempo de Espera por Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+    
+    
+  })
+  
+  
+  #gráfico de tempo de espera por atendimentos médicos no norte por hora do dia
+  output$tempo_esp_medicos_norte_hora_plot <- renderPlotly({
+    
+    if(input$tempo_esp_medicos_norte_especialidade == "Comparação"){
+      
+      espera_med_norte_hora <- espera_med_norte_hora
+      
+      a<-ggplot(espera_med_norte_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      espera_med_norte_hora <- espera_med_norte_hora %>% 
+        filter(ESPECIALIDADE == input$tempo_esp_medicos_norte_especialidade)  
+      
+      a<-ggplot(espera_med_norte_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de espera por atendimentos médicos no norte por hora do dia
+  output$tempo_esp_medicos_norte_hora_tab <- renderDataTable({
+    
+    if(input$tempo_esp_medicos_norte_especialidade == "Comparação"){
+      
+      espera_med_norte_hora <- espera_med_norte_hora
+    
+    }else{
+      
+      espera_med_norte_hora <- espera_med_norte_hora %>% 
+        filter(ESPECIALIDADE == input$tempo_esp_medicos_norte_especialidade)}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de espera por atendimentos médicos no norte por hora do dia
+  output$tempo_esp_medicos_norte_hora_info <- renderText({
+    
+    paste("<b>A.41)Mediana do Tempo de Espera por Atendimentos Médicos na Clínica da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera por atendimentos médicos na clínica da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.42)Mediana do Tempo de Espera por Atendimentos Médicos na Pediatria da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na pediatria da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.43)Mediana do Tempo de Espera por Atendimentos Médicos na Cirurgia da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na cirurgia da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.44)Mediana do Tempo Total de Espera por Atendimentos Médicos da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.45)Mediana do Tempo de Espera por Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+  })
+  
+  ###########################################################################################
+  #Dashboard Classificação de Risco UPA Norte  
+  ###########################################################################################
+  
+  #gráfico de classificação de risco no norte por mês
+  output$num_atd_classificacao_norte_mes_plot <- renderPlotly({
+    
+    
+    if(input$num_atd_classificacao_norte_tipo == "Comparação"){
+      
+      atendimentos_classificacao_norte_mes <- atendimentos_classificacao_norte_mes  %>%
+       filter(VARIAVEL == "PRODUZIDO" | is.na(VARIAVEL)) #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+        
+      a<-ggplot(atendimentos_classificacao_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+        scale_y_continuous(breaks = c(0, 5000,10000,15000))
+      
+    }else if (input$num_atd_classificacao_norte_tipo == "Total"){
+      
+      atendimento_classificacao_norte_mes <- atendimentos_classificacao_norte_mes  %>%
+       filter(VARIAVEL == "PRODUZIDO") 
+       
+       
+      a<-ggplot(atendimento_classificacao_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+        geom_hline(yintercept = 10125,col = "red", size = 0.8)+
+        geom_hline(yintercept = 9000, col = "red", size = 0.2)+
+        geom_hline(yintercept = 7875, col = "red", size = 0.2)+
+        geom_hline(yintercept = 6750, col = "red", size = 0.2)+
+        geom_hline(yintercept = 5625, col = "red", size = 0.2)+
+        geom_hline(yintercept = 4500, col = "red", size = 0.2)+
+        geom_hline(yintercept = 3375, col = "red", size = 0.2)+
+        geom_hline(yintercept = 2250, col = "red", size = 0.2)+
+        scale_y_continuous(breaks = c(0, 2250,3375,4500,5625,6750,7875,9000,10125,11000,12000,13000,14000,15000),limits=c(0,16000))
+     
+      
+    }else{
+      
+      atendimentos_classificacao_norte_mes <- atendimentos_classificacao_norte_mes %>%
+       filter(CLASSIFICACAO == input$num_atd_classificacao_norte_tipo)  
+      
+      a<-ggplot(atendimentos_classificacao_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+        scale_y_continuous(breaks = c(0, 5000,10000,15000))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de classificação de risco norte por mês
+  output$num_atd_classificacao_norte_mes_tab <- renderDataTable({
+    
+    if(input$num_atd_classificacao_norte_tipo == "Comparação"){
+      
+      atendimentos_classificacao_norte_mes <- atendimentos_classificacao_norte_mes  %>%
+       filter(VARIAVEL == "PRODUZIDO" | is.na(VARIAVEL)) #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+        
+
+    }else if (input$num_atd_classificacao_norte_tipo == "Total"){
+      
+      atendimentos_classificacao_norte_mes <- atendimentos_classificacao_norte_mes  %>%
+       filter(CLASSIFICACAO == "Total")%>%
+       filter(VARIAVEL == "PRODUZIDO") #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+          
+      
+
+    }else{
+      
+      atendimentos_classificacao_norte_mes <- atendimentos_classificacao_norte_mes %>%
+       filter(CLASSIFICACAO == input$num_atd_classificacao_norte_tipo)}  
+      
+
+    atendimentos_classificacao_norte_mes
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de classificação de risco norte por mês
+  output$num_atd_classificacao_norte_mes_info <- renderText({
+    
+    paste("<b>B.01)Número de Pacientes Classificados com Risco Ambulatorial na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de pacientes classificados com risco ambulatorial na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.02)Número de Pacientes Classificados com Risco Intercorrência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de pacientes classificados com risco intercorrência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.03)Número de Pacientes Classificados com Risco Urgência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de pacientes classificados com risco urgência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.04)Número de Pacientes Classificados com Risco Emergência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de pacientes classificados com risco emergência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.05)Número Total de Pacientes com Classificados de Risco na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de pacientes classificados na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.06)Número de Pacientes Classificados com Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de pacientes classificados com risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+  })
+  
+  #gráfico de classificação de risco norte por dia da semana
+  output$num_atd_classificacao_norte_dia_plot <- renderPlotly({
+    
+    if(input$num_atd_classificacao_norte_tipo == "Comparação"){
+      
+      atendimentos_classificacao_norte_dia <- atendimentos_classificacao_norte_dia
+      
+      a<-ggplot(atendimentos_classificacao_norte_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      atendimentos_classificacao_norte_dia <- atendimentos_classificacao_norte_dia %>% 
+        filter(CLASSIFICACAO == input$num_atd_classificacao_norte_tipo)  
+      
+      a<-ggplot(atendimentos_classificacao_norte_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de classificação de risco norte por dia da semana
+  output$num_atd_classificacao_norte_dia_tab <- renderDataTable({
+    
+    if(input$num_atd_classificacao_norte_tipo == "Comparação"){
+      
+      atendimentos_classificacao_norte_dia <- atendimentos_classificacao_norte_dia
+      
+    }else{
+      
+      atendimentos_classificacao_norte_dia <- atendimentos_classificacao_norte_dia %>% 
+        filter(CLASSIFICACAO == input$num_atd_classificacao_norte_tipo)}  
+
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de classificação de risco norte por dia
+  output$num_atd_classificacao_norte_dia_info <- renderText({
+    
+    paste("<b>B.07)Mediana de Pacientes Classificados com Risco Ambulatorial na UPA, por Dia da Semana</b>" , "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco ambulatorial na UPA, por Dia da Semana, nos últimos 6 meses", "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.08)Mediana de Pacientes Classificados com Risco Intercorrência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco intercorrência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.09)Mediana de Pacientes Classificados com Risco Urgência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco urgência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.10)Mediana de Pacientes Classificados com Risco Emergência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco emergência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.11)Mediana de Pacientes com Classificados de Risco na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.12)Mediana de Pacientes Classificados com Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+  })
+  
+  
+  #gráfico de classificação de risco norte por hora do dia
+  output$num_atd_classificacao_norte_hora_plot <- renderPlotly({
+    
+    if(input$num_atd_classificacao_norte_tipo == "Comparação"){
+      
+      atendimentos_classificacao_norte_hora <- atendimentos_classificacao_norte_hora
+      
+      a<-ggplot(atendimentos_classificacao_norte_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+     atendimentos_classificacao_norte_hora <- atendimentos_classificacao_norte_hora %>% 
+        filter(CLASSIFICACAO == input$num_atd_classificacao_norte_tipo)  
+      
+      a<-ggplot(atendimentos_classificacao_norte_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de classificação de risco norte por hora do dia
+  output$num_atd_classificacao_norte_hora_tab <- renderDataTable({
+    
+    if(input$num_atd_classificacao_norte_tipo == "Comparação"){
+      
+      atendimentos_classificacao_norte_hora <- atendimentos_classificacao_norte_hora
+      
+    }else{
+      
+     atendimentos_classificacao_norte_hora <- atendimentos_classificacao_norte_hora %>% 
+        filter(CLASSIFICACAO == input$num_atd_classificacao_norte_tipo)} 
+                                          
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de classificação de risco norte por hora do dia
+  output$num_atd_classificacao_norte_hora_info <- renderText({
+    
+    paste("<b>B.13)Mediana de Pacientes Classificados com Risco Ambulatorial na UPA, por Hora do Dia</b>" , "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco ambulatorial na UPA, por Hora do Dia, nos últimos 6 meses", "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.14)Mediana de Pacientes Classificados com Risco Intercorrência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco intercorrência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.15)Mediana de Pacientes Classificados com Risco Urgência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco urgência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.16)Mediana de Pacientes Classificados com Risco Emergência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco emergência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.17)Mediana de Pacientes com Classificados de Risco na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.18)Mediana de Pacientes Classificados com Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+  })
+  
+  #gráfico de tempo de classificação de risco no norte por mês
+  output$tempo_atd_classificacao_norte_mes_plot <- renderPlotly({
+    
+    if(input$tempo_atd_classificacao_norte_tipo == "Comparação"){
+
+     tempo_classificacao_norte_mes <- tempo_classificacao_norte_mes
+      
+      a<-ggplot(tempo_classificacao_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      tempo_classificacao_norte_mes <- tempo_classificacao_norte_mes %>% 
+        filter(CLASSIFICACAO == input$tempo_atd_classificacao_norte_tipo)  
+      
+      a<-ggplot(tempo_classificacao_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de de tempo de classificação de risco no norte por mês
+  output$tempo_atd_classificacao_norte_mes_tab <- renderDataTable({
+    
+    if(input$tempo_atd_classificacao_norte_tipo == "Comparação"){
+
+     tempo_classificacao_norte_mes <- tempo_classificacao_norte_mes
+      
+    }else{
+      
+      tempo_classificacao_norte_mes <- tempo_classificacao_norte_mes %>% 
+        filter(CLASSIFICACAO == input$tempo_atd_classificacao_norte_tipo)}
+   
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de  tempo de classificação de risco no norte por mês
+  output$tempo_atd_classificacao_norte_mes_info <- renderText({
+    
+    paste("<b>B.19)Mediana do Tempo de Duração da Classificação de Risco Ambulatorial na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco ambulatorial na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.20)Mediana do Tempo de Duração da Classificação de Risco Intercorrência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco intercorrência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.21)Mediana do Tempo de Duração da Classificação de Risco Urgência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco urgência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.22)Mediana do Tempo de Duração da Classificação de Risco Emergência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> SMediana do tempo (em minutos) da classificação de risco emergência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.23)Mediana do Tempo de Duração da Classificação de Risco na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.24)Mediana do Tempo de Duração da Classificação de Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+    
+    
+  })
+  
+  #gráfico de tempo de classificação de risco no norte por dia da semana
+  output$tempo_atd_classificacao_norte_dia_plot <- renderPlotly({
+    
+    if(input$tempo_atd_classificacao_norte_tipo == "Comparação"){
+      
+      tempo_classificacao_norte_dia <- tempo_classificacao_norte_dia
+      
+      a<-ggplot(tempo_classificacao_norte_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      tempo_classificacao_norte_dia <- tempo_classificacao_norte_dia %>% 
+       filter(CLASSIFICACAO == input$tempo_atd_classificacao_norte_tipo)  
+      
+      a<-ggplot(tempo_classificacao_norte_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de classificação de risco no norte por dia da semana
+  output$tempo_atd_classificacao_norte_dia_tab <- renderDataTable({
+    
+    if(input$tempo_atd_classificacao_norte_tipo == "Comparação"){
+      
+      tempo_classificacao_norte_dia <- tempo_classificacao_norte_dia
+
+    }else{
+      
+      tempo_classificacao_norte_dia <- tempo_classificacao_norte_dia %>% 
+       filter(CLASSIFICACAO == input$tempo_atd_classificacao_norte_tipo)}
+                                          
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de classificação de risco no norte por dia
+  output$tempo_atd_classificacao_norte_dia_info <- renderText({
+    
+    paste("<b>B.25)Mediana do Tempo de Duração da Classificação de Risco Ambulatorial na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco ambulatorial na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.26)Mediana do Tempo de Duração da Classificação de Risco Intercorrência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco intercorrência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.27)Mediana do Tempo de Duração da Classificação de Risco Urgência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco urgência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.28)Mediana do Tempo de Duração da Classificação de Risco Emergência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> SMediana do tempo (em minutos) da classificação de risco emergência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.29)Mediana do Tempo de Duração da Classificação de Risco na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.30)Mediana do Tempo de Duração da Classificação de Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+    
+    
+    
+  })
+  
+  
+  #gráfico de tempo de classificação de risco no norte por hora do dia
+  output$tempo_atd_classificacao_norte_hora_plot <- renderPlotly({
+    
+    if(input$tempo_atd_classificacao_norte_tipo == "Comparação"){
+      
+      tempo_classificacao_norte_hora <- tempo_classificacao_norte_hora
+      
+      a<-ggplot(tempo_classificacao_norte_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      tempo_classificacao_norte_hora <- tempo_classificacao_norte_hora %>% 
+        filter(CLASSIFICACAO == input$tempo_atd_classificacao_norte_tipo)  
+      
+      a<-ggplot(tempo_classificacao_norte_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de classificação de risco no norte por hora do dia
+  output$tempo_atd_classificacao_norte_hora_tab <- renderDataTable({
+    
+    if(input$tempo_atd_classificacao_norte_tipo == "Comparação"){
+      
+      tempo_classificacao_norte_hora <- tempo_classificacao_norte_hora
+      
+    }else{
+      
+      tempo_classificacao_norte_hora <- tempo_classificacao_norte_hora %>% 
+        filter(CLASSIFICACAO == input$tempo_atd_classificacao_norte_tipo)}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de classificação de risco no norte por hora do dia
+  output$tempo_atd_classificacao_norte_hora_info <- renderText({
+    
+    paste("<b>B.31)Mediana do Tempo de Duração da Classificação de Risco Ambulatorial na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco ambulatorial na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.32)Mediana do Tempo de Duração da Classificação de Risco Intercorrência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco intercorrência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.33)Mediana do Tempo de Duração da Classificação de Risco Urgência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco urgência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.34)Mediana do Tempo de Duração da Classificação de Risco Emergência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> SMediana do tempo (em minutos) da classificação de risco emergência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.35)Mediana do Tempo de Duração da Classificação de Risco na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.36)Mediana do Tempo de Duração da Classificação de Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+  })
+  
+  #gráfico de espera de classificação de risco no norte por mês
+  output$tempo_esp_classificacao_norte_mes_plot <- renderPlotly({
+    
+    if(input$tempo_esp_classificacao_norte_tipo == "Comparação"){
+                                            
+      espera_classificacao_norte_mes <- espera_classificacao_norte_mes
+      
+      a<-ggplot(espera_classificacao_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      espera_classificacao_norte_mes <- espera_classificacao_norte_mes %>% 
+        filter(CLASSIFICACAO == input$tempo_esp_classificacao_norte_tipo)  
+      
+      a<-ggplot(espera_classificacao_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de de espera de classificação de risco no norte por mês
+  output$tempo_esp_classificacao_norte_mes_tab <- renderDataTable({
+    
+    if(input$tempo_esp_classificacao_norte_tipo == "Comparação"){
+                                            
+      espera_classificacao_norte_mes <- espera_classificacao_norte_mes
+      
+    }else{
+      
+      espera_classificacao_norte_mes <- espera_classificacao_norte_mes %>% 
+        filter(CLASSIFICACAO == input$tempo_esp_classificacao_norte_tipo)}
+        
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de  espera de classificação de risco no norte por mês
+  output$tempo_esp_classificacao_norte_mes_info <- renderText({
+    
+    paste("<b>B.37)Mediana do Tempo de Espera para Classificação de Risco Ambulatorial na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera para classificação de risco ambulatorial na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.38)Mediana do Tempo de Espera para Classificação de Risco Intercorrência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera para classificação de risco intercorrência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.39)Mediana do Tempo de Espera para Classificação de Risco Urgência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera para classificação de risco urgência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.40)Mediana do Tempo de Espera para Classificação de Risco Emergência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> SMediana do tempo (em minutos) de espera para classificação de risco emergência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.41)Mediana do Tempo de Espera para Classificação de Risco na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera para classificação de risco na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.42)Mediana do Tempo de Espera para Classificação de Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera para classificação de risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+    
+    
+  })
+  
+  #gráfico de espera de classificação de risco no norte por dia da semana
+  output$tempo_esp_classificacao_norte_dia_plot <- renderPlotly({
+    
+    if(input$tempo_esp_classificacao_norte_tipo == "Comparação"){
+      
+      espera_classificacao_norte_dia <- espera_classificacao_norte_dia
+      
+      a<-ggplot(espera_classificacao_norte_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      espera_classificacao_norte_dia <- espera_classificacao_norte_dia %>% 
+       filter(CLASSIFICACAO == input$tempo_esp_classificacao_norte_tipo)  
+      
+      a<-ggplot(espera_classificacao_norte_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de espera de classificação de risco no norte por dia da semana
+  output$tempo_esp_classificacao_norte_dia_tab <- renderDataTable({
+    
+    if(input$tempo_esp_classificacao_norte_tipo == "Comparação"){
+      
+      espera_classificacao_norte_dia <- espera_classificacao_norte_dia
+      
+    }else{
+      
+      espera_classificacao_norte_dia <- espera_classificacao_norte_dia %>% 
+       filter(CLASSIFICACAO == input$tempo_esp_classificacao_norte_tipo)}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de espera de classificação de risco no norte por dia
+  output$tempo_esp_classificacao_norte_dia_info <- renderText({
+    
+    paste("<b>B.43)Mediana do espera de Duração da Classificação de Risco Ambulatorial na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco ambulatorial na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.44)Mediana do espera de Duração da Classificação de Risco Intercorrência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco intercorrência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.45)Mediana do espera de Duração da Classificação de Risco Urgência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco urgência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.46)Mediana do espera de Duração da Classificação de Risco Emergência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> SMediana do espera (em minutos) da classificação de risco emergência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.47)Mediana do espera de Duração da Classificação de Risco na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.48)Mediana do espera de Duração da Classificação de Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+    
+    
+    
+  })
+  
+  
+  #gráfico de espera de classificação de risco no norte por hora do dia
+  output$tempo_esp_classificacao_norte_hora_plot <- renderPlotly({
+    
+    if(input$tempo_esp_classificacao_norte_tipo == "Comparação"){
+      
+      espera_classificacao_norte_hora <- espera_classificacao_norte_hora
+      
+      a<-ggplot(espera_classificacao_norte_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      espera_classificacao_norte_hora <- espera_classificacao_norte_hora %>% 
+       filter(CLASSIFICACAO == input$tempo_esp_classificacao_norte_tipo)  
+      
+      a<-ggplot(espera_classificacao_norte_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de espera de classificação de risco no norte por hora do dia
+  output$tempo_esp_classificacao_norte_hora_tab <- renderDataTable({
+    
+    if(input$tempo_esp_classificacao_norte_tipo == "Comparação"){
+      
+      espera_classificacao_norte_hora <- espera_classificacao_norte_hora
+
+          }else{
+      
+      espera_classificacao_norte_hora <- espera_classificacao_norte_hora %>% 
+       filter(CLASSIFICACAO == input$tempo_esp_classificacao_norte_tipo)}
+                                          
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de espera de classificação de risco no norte por hora do dia
+  output$tempo_esp_classificacao_norte_hora_info <- renderText({
+    
+    paste("<b>B.49)Mediana do espera de Duração da Classificação de Risco Ambulatorial na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco ambulatorial na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.50)Mediana do espera de Duração da Classificação de Risco Intercorrência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco intercorrência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.51)Mediana do espera de Duração da Classificação de Risco Urgência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco urgência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.52)Mediana do espera de Duração da Classificação de Risco Emergência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> SMediana do espera (em minutos) da classificação de risco emergência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.53)Mediana do espera de Duração da Classificação de Risco na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.54)Mediana do espera de Duração da Classificação de Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+  })
+  
+  
+  
+  ###########################################################################################
+  #Dashboard Odontologia UPA Norte  
+  ###########################################################################################
+  
+  #gráfico de odontologia no norte por mês
+  output$num_atd_odontologia_norte_mes_plot <- renderPlotly({
+    
+    atendimentos_odontologia_norte_mes <- atendimentos_odontologia_norte_mes
+                                          
+    a<-ggplot(atendimentos_odontologia_norte_mes, aes(x = as.factor(DATA))) + 
+      geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela odontologia no norte por mês
+  output$num_atd_odontologia_norte_mes_tab <- renderDataTable({
+    
+    atendimentos_odontologia_norte_mes
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações odontologia no norte por mês
+  output$num_atd_odontologia_norte_mes_info <- renderText({
+    
+    paste("<b>C.01)Número de Atendimentos Odontológicos da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de atendimentos Odontológicos da UPA, por Mês" , "<br>")
+    
+  })
+  
+  #gráfico odontologia no norte por dia da semana
+  output$num_atd_odontologia_norte_dia_plot <- renderPlotly({
+    
+    a<-ggplot(atendimentos_odontologia_norte_dia, aes(x = as.factor(DIA))) + 
+      geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela odontologia no norte por dia da semana
+  output$num_atd_odontologia_norte_dia_tab <- renderDataTable({
+    
+    atendimentos_odontologia_norte_dia
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações odontologia no norte por mês
+  output$num_atd_odontologia_norte_dia_info <- renderText({
+    
+    paste("<b>C.02)Mediana de Atendimentos Odontológicos da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos Odontológicos da UPA, por Dia da Semana" )
+    
+    
+  })
+  
+  
+  #gráfico odontologia no norte por hora do dia
+  output$num_atd_odontologia_norte_hora_plot <- renderPlotly({
+    
+    a<-ggplot(atendimentos_odontologia_norte_hora, aes(x = as.factor(HORA))) + 
+      geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela odontologia norte por hora do dia
+  output$num_atd_odontologia_norte_hora_tab <- renderDataTable({
+    
+    atendimentos_odontologia_norte_hora
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações odontologia norte por hora do dia
+  output$num_atd_odontologia_norte_hora_info <- renderText({
+    
+    paste("<b>C.03)Mediana de Atendimentos Odontológicos da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos Odontológicos da UPA, por Hora do Dia" , "<br>")
+  })
+  
+  #gráfico de tempo de atendimento odontologico no norte por mês
+  output$tempo_atd_odontologia_norte_mes_plot <- renderPlotly({
+    
+    
+    a<-ggplot(tempo_odontologia_norte_mes, aes(x = as.factor(DATA))) + 
+      geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de de tempo de atendimento odontologico no norte por mês
+  output$tempo_atd_odontologia_norte_mes_tab <- renderDataTable({
+    
+    tempo_odontologia_norte_mes
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de  tempo de atendimento odontologico no norte por mês
+  output$tempo_atd_odontologia_norte_mes_info <- renderText({
+    
+    paste("<b>C.04)Mediana do Tempo de Duração dos Atendimentos Odontológicos da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) dos atendimentos odontológicos da UPA, por Mês" , "<br>")
+    
+  })
+  
+  #gráfico de tempo de atendimento odontologico no norte por dia da semana
+  output$tempo_atd_odontologia_norte_dia_plot <- renderPlotly({
+    
+    a<-ggplot(tempo_odontologia_norte_dia, aes(x = as.factor(DIA))) + 
+      geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de atendimento odontologico no norte por dia da semana
+  output$tempo_atd_odontologia_norte_dia_tab <- renderDataTable({
+    
+    tempo_odontologia_norte_dia
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de atendimento odontologico no norte por dia
+  output$tempo_atd_odontologia_norte_dia_info <- renderText({
+    
+    paste("<b>C.05)Mediana do Tempo de Duração dos Atendimentos Odontológicos da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) dos atendimentos odontológicos da UPA, por Dia da Semana" , "<br>")
+    
+  })
+  
+  
+  #gráfico de tempo de atendimento odontologico no norte por hora do dia
+  output$tempo_atd_odontologia_norte_hora_plot <- renderPlotly({
+    
+    a<-ggplot(tempo_odontologia_norte_hora, aes(x = as.factor(HORA))) + 
+      geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de atendimento odontologico no norte por hora do dia
+  output$tempo_atd_odontologia_norte_hora_tab <- renderDataTable({
+    
+    tempo_odontologia_norte_hora
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de atendimento odontologico no norte por hora do dia
+  output$tempo_atd_odontologia_norte_hora_info <- renderText({
+    
+    paste("<b>C.06)Mediana do Tempo de Duração dos Atendimentos Odontológicos da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) dos atendimentos odontológicos da UPA, por Hora do Dia" , "<br>")
+    
+  })
+  
+  #gráfico do tempo de espera por atendimento odontologico no norte por mês
+  output$tempo_esp_odontologia_norte_mes_plot <- renderPlotly({
+    
+    
+    a<-ggplot(espera_odontologia_norte_mes, aes(x = as.factor(DATA))) + 
+      geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela do tempo de espera por atendimento odontologico no norte por mês
+  output$tempo_esp_odontologia_norte_mes_tab <- renderDataTable({
+    
+    espera_odontologia_norte_mes
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações do tempo de espera por atendimento odontologico no norte por mês
+  output$tempo_esp_odontologia_norte_mes_info <- renderText({
+    
+    paste("<b>C.07)Mediana do Tempo de Espera por Atendimentos Odontológicos da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo de espera (em minutos) por atendimentos odontológicos da UPA, por Mês" , "<br>")
+    
+  })
+  
+  #gráfico do tempo de espera por atendimento odontologico no norte por dia da semana
+  output$tempo_esp_odontologia_norte_dia_plot <- renderPlotly({
+    
+    a<-ggplot(espera_odontologia_norte_dia, aes(x = as.factor(DIA))) + 
+      geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela do tempo de espera por atendimento odontologico no norte por dia da semana
+  output$tempo_esp_odontologia_norte_dia_tab <- renderDataTable({
+    
+    espera_odontologia_norte_dia
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações do tempo de espera por atendimento odontologico no norte por dia
+  output$tempo_esp_odontologia_norte_dia_info <- renderText({
+    
+    paste("<b>C.08)Mediana do Tempo de Espera por Atendimentos Odontológicos da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo de espera (em minutos) por atendimentos odontológicos da UPA, por Dia da Semana" , "<br>")
+    
+  })
+  
+  
+  #gráfico do tempo de espera por atendimento odontologico no norte por hora do dia
+  output$tempo_esp_odontologia_norte_hora_plot <- renderPlotly({
+    
+    a<-ggplot(espera_odontologia_norte_hora, aes(x = as.factor(HORA))) + 
+      geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela do tempo de espera por atendimento odontologico no norte por hora do dia
+  output$tempo_esp_odontologia_norte_hora_tab <- renderDataTable({
+    
+    espera_odontologia_norte_hora
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações do tempo de espera por atendimento odontologico no norte por hora do dia
+  output$tempo_esp_odontologia_norte_hora_info <- renderText({
+    
+    paste("<b>C.09)Mediana do Tempo de Espera por Atendimentos Odontológicos da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo de espera (em minutos) por atendimentos odontológicos da UPA, por Hora do Dia" , "<br>")
+    
+  })
+  
+  
+  ###########################################################################################
+  #UPA Sul
+  ###########################################################################################
+  
+  ###########################################################################################
+  #Dashboard Médicos UPA Sul  
+  ###########################################################################################
+  ###########################################################################################                         
+  #Número                                                    
+  ###########################################################################################
+
+  #gráfico de atendimentos médicos no sul por mês
+  output$num_atd_medicos_sul_mes_plot <- renderPlotly({
+    
+    
+    
+    if(input$num_atd_medicos_sul_especialidade == "Comparação"){
+      
+      medicos_sul_mes <- atendimentos_med_sul_mes %>%
+       filter(VARIAVEL == "PRODUZIDO" | is.na(VARIAVEL)) #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+        
+      
+      a<-ggplot(medicos_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+        scale_y_continuous(breaks = c(0, 5000,10000,15000))
+      
+    }else if (input$num_atd_medicos_sul_especialidade == "Total"){
+      
+      medicos_sul_mes <- atendimentos_med_sul_mes  %>%
+       filter(ESPECIALIDADE == "Total") %>%
+       filter(VARIAVEL == "PRODUZIDO") #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+       
+       
+      a<-ggplot(medicos_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+        geom_hline(yintercept = 10125,col = "red", size = 0.8)+
+        geom_hline(yintercept = 9000, col = "red", size = 0.2)+
+        geom_hline(yintercept = 7875, col = "red", size = 0.2)+
+        geom_hline(yintercept = 6750, col = "red", size = 0.2)+
+        geom_hline(yintercept = 5625, col = "red", size = 0.2)+
+        geom_hline(yintercept = 4500, col = "red", size = 0.2)+
+        geom_hline(yintercept = 3375, col = "red", size = 0.2)+
+        geom_hline(yintercept = 2250, col = "red", size = 0.2)+
+        scale_y_continuous(breaks = c(0, 2250,3375,4500,5625,6750,7875,9000,10125,11000,12000,13000,14000,15000),limits=c(0,16000))
+
+      
+      
+    }else{
+      
+      medicos_sul_mes <- atendimentos_med_sul_mes %>%
+       filter(ESPECIALIDADE == input$num_atd_medicos_sul_especialidade)  
+      
+      a<-ggplot(medicos_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+        scale_y_continuous(breaks = c(0, 5000,10000,15000))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de atendimentos médicos no sul por mês
+  output$num_atd_medicos_sul_mes_tab <- renderDataTable({
+    
+    if(input$num_atd_medicos_sul_especialidade == "Comparação"){
+      
+      medicos_sul_mes <- atendimentos_med_sul_mes %>%
+       filter(VARIAVEL == "PRODUZIDO" | is.na(VARIAVEL)) #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+        
+      
+
+    }else if (input$num_atd_medicos_sul_especialidade == "Total"){
+      
+      medicos_sul_mes <- atendimentos_med_sul_mes  %>%
+       filter(ESPECIALIDADE == "Total")%>%
+       filter(VARIAVEL == "PRODUZIDO") #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+          
+      
+    }else{
+      
+      medicos_sul_mes <- atendimentos_med_sul_mes %>%
+       filter(ESPECIALIDADE == input$num_atd_medicos_sul_especialidade)  
+      
+
+    medicos_sul_mes}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de atendimentos médicos no sul por mês
+  output$num_atd_medicos_sul_mes_info <- renderText({
+    
+    paste("<b>A.01)Número de Atendimentos Médicos na Clínica da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de atendimentos médicos na clínica da UPA, por Mês" , "<br>",
+          "<b>A.02)Número de Atendimentos Médicos na Pediatria da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de atendimentos médicos na pediatria da UPA, por Mês" , "<br>",
+          "<b>A.03)Número de Atendimentos Médicos na Cirurgia da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de atendimentos médicos na cirurgia da UPA, por Mês" , "<br>",
+          "<b>A.04)Número Total de Atendimentos Médicos da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de atendimentos médicos da UPA, por Mês" , "<br>",
+          "<b>A.05)Número de Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Mês" , "<br>")
+    
+    
+  })
+  
+  
+  
+  #gráfico de atendimentos médicos no sul por dia da semana
+  output$num_atd_medicos_sul_dia_plot <- renderPlotly({
+    
+    
+    if(input$num_atd_medicos_sul_especialidade == "Comparação"){
+      
+      medicos_sul_dia <- atendimentos_med_sul_dia
+      
+      a<-ggplot(medicos_sul_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      medicos_sul_dia <- atendimentos_med_sul_dia %>% 
+        filter(ESPECIALIDADE == input$num_atd_medicos_sul_especialidade)  
+      
+      a<-ggplot(medicos_sul_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de atendimentos médicos no sul por dia da semana
+  output$num_atd_medicos_sul_dia_tab <- renderDataTable({
+    
+    
+    if(input$num_atd_medicos_sul_especialidade == "Comparação"){
+      
+      medicos_sul_dia <- atendimentos_med_sul_dia
+
+    }else{
+      
+      medicos_sul_dia <- atendimentos_med_sul_dia %>% 
+        filter(ESPECIALIDADE == input$num_atd_medicos_sul_especialidade)  
+      
+     medicos_sul_dia}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de atendimentos médicos no sul por dia
+  output$num_atd_medicos_sul_dia_info <- renderText({
+    
+    paste("<b>A.06)Mediana de Atendimentos Médicos na Clínica da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na clínica da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.07)Mediana de Atendimentos Médicos na Pediatria da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na pediatria da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.08)Mediana de Atendimentos Médicos na Cirurgia da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na cirurgia da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.09)Mediana de Atendimentos Médicos da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.10)Mediana de Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Dia da Semana, nos últimos 6 meses" , "<br>"          )
+    
+    
+    
+  })
+  
+  
+  #gráfico de atendimentos médicos no sul por hora do dia
+  output$num_atd_medicos_sul_hora_plot <- renderPlotly({
+    
+    if(input$num_atd_medicos_sul_especialidade == "Comparação"){
+      
+      medicos_sul_hora <- atendimentos_med_sul_hora
+      
+      a<-ggplot(medicos_sul_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      medicos_sul_hora <- atendimentos_med_sul_hora %>% 
+        filter(ESPECIALIDADE == input$num_atd_medicos_sul_especialidade)  
+      
+      a<-ggplot(medicos_sul_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      }
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de atendimentos médicos no sul por hora do dia
+  output$num_atd_medicos_sul_hora_tab <- renderDataTable({
+    
+    if(input$num_atd_medicos_sul_especialidade == "Comparação"){
+      
+      medicos_sul_hora <- atendimentos_med_sul_hora
+      
+    }else{
+      
+      medicos_sul_hora <- atendimentos_med_sul_hora %>% 
+        filter(ESPECIALIDADE == input$num_atd_medicos_sul_especialidade)  
+      
+    medicos_sul_hora}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de atendimentos médicos no sul por hora do dia
+  output$num_atd_medicos_sul_hora_info <- renderText({
+    
+    paste("<b>A.11)Mediana de Atendimentos Médicos na Clínica da UPA, por Hora da Saúde</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na clínica da UPA, por Hora da Saúde, nos últimos 6 meses" , "<br>",
+          "<b>A.12)Mediana de Atendimentos Médicos na Pediatria da UPA, por Hora da Saúde</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na pediatria da UPA, por Hora da Saúde, nos últimos 6 meses" , "<br>",
+          "<b>A.13)Mediana de Atendimentos Médicos na Cirurgia da UPA, por Hora da Saúde</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na cirurgia da UPA, por Hora da Saúde, nos últimos 6 meses" , "<br>",
+          "<b>A.14)Mediana de Atendimentos Médicos da UPA, por Hora da Saúde</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos da UPA, por Hora da Saúde, nos últimos 6 meses" , "<br>",
+          "<b>A.15)Mediana de Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Hora da Saúde</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Hora da Saúde, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O denominador equivale ao número de dias do período avaliado" , "<br>")   
+    
+  })
+  
+ ###########################################################################################                         
+ #Tempo de atendimentos                                                         
+ ###########################################################################################
+  
+  #gráfico de tempo de atendimentos médicos no sul por mês
+  output$tempo_atd_medicos_sul_mes_plot <- renderPlotly({
+    
+    
+    
+    if(input$tempo_atd_medicos_sul_especialidade == "Comparação"){
+                                            
+      tempo_med_sul_mes <- tempo_med_sul_mes
+      
+      a<-ggplot(tempo_med_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      tempo_med_sul_mes <- tempo_med_sul_mes %>% 
+        filter(ESPECIALIDADE == input$tempo_atd_medicos_sul_especialidade)  
+      
+      a<-ggplot(tempo_med_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de de tempo de atendimentos médicos no sul por mês
+  output$tempo_atd_medicos_sul_mes_tab <- renderDataTable({
+   if(input$tempo_atd_medicos_sul_especialidade == "Comparação"){
+      
+      tempo_med_sul_mes <- tempo_med_sul_mes
+  
+    }else{
+      
+      tempo_med_sul_mes <- tempo_med_sul_mes %>% 
+        filter(ESPECIALIDADE == input$tempo_atd_medicos_sul_especialidade)}
+     
+    tempo_med_sul_mes
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de  tempo de atendimentos médicos no sul por mês
+  output$tempo_atd_medicos_sul_mes_info <- renderText({
+    
+    paste("<b>A.16)Mediana do Tempo de Atendimentos Médicos na Clínica da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de atendimentos médicos na clínica da UPA, por Mês" , "<br>",
+          "<b>A.17)Mediana do Tempo de Atendimentos Médicos na Pediatria da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na pediatria da UPA, por Mês" , "<br>",
+          "<b>A.18)Mediana do Tempo de Atendimentos Médicos na Cirurgia da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na cirurgia da UPA, por Mês" , "<br>",
+          "<b>A.19)Mediana do Tempo Total de Atendimentos Médicos da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos da UPA, por Mês" , "<br>",
+          "<b>A.20)Mediana do Tempo de Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Mês" , "<br>")
+    
+    
+  })
+  
+  #gráfico de tempo de atendimentos médicos no sul por dia da semana
+  output$tempo_atd_medicos_sul_dia_plot <- renderPlotly({
+    
+     if(input$tempo_atd_medicos_sul_especialidade == "Comparação"){
+      
+      tempo_med_sul_dia <- tempo_med_sul_dia
+      
+      a<-ggplot(tempo_med_sul_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      tempo_med_sul_dia <- tempo_med_sul_dia %>% 
+        filter(ESPECIALIDADE == input$tempo_atd_medicos_sul_especialidade)  
+      
+      a<-ggplot(tempo_med_sul_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de atendimentos médicos no sul por dia da semana
+  output$tempo_atd_medicos_sul_dia_tab <- renderDataTable({
+    
+    if(input$tempo_atd_medicos_sul_especialidade == "Comparação"){
+      
+      tempo_med_sul_dia <- tempo_med_sul_dia
+      
+    }else{
+      
+      tempo_med_sul_dia <- tempo_med_sul_dia %>% 
+       filter(ESPECIALIDADE == input$tempo_atd_medicos_sul_especialidade)}
+    
+    tempo_med_sul_dia
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de atendimentos médicos no sul por dia
+  output$tempo_atd_medicos_sul_dia_info <- renderText({
+    
+    paste("<b>A.21)Mediana do Tempo de Atendimentos Médicos na Clínica da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de atendimentos médicos na clínica da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.22)Mediana do Tempo de Atendimentos Médicos na Pediatria da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na pediatria da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.23)Mediana do Tempo de Atendimentos Médicos na Cirurgia da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na cirurgia da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.24)Mediana do Tempo Total de Atendimentos Médicos da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>A.25)Mediana do Tempo de Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Dia da Semana, nos últimos 6 meses")
+    
+    
+    
+  })
+  
+  
+  #gráfico de tempo de atendimentos médicos no sul por hora do dia
+  output$tempo_atd_medicos_sul_hora_plot <- renderPlotly({
+    
+    
+    if(input$tempo_atd_medicos_sul_especialidade == "Comparação"){
+      
+      tempo_med_sul_hora <- tempo_med_sul_hora
+      
+      a<-ggplot(tempo_med_sul_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      tempo_med_sul_hora <- tempo_med_sul_hora %>% 
+        filter(ESPECIALIDADE == input$tempo_atd_medicos_sul_especialidade)  
+      
+      a<-ggplot(tempo_med_sul_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de atendimentos médicos no sul por hora do dia
+  output$tempo_atd_medicos_sul_hora_tab <- renderDataTable({
+    
+    if(input$tempo_atd_medicos_sul_especialidade == "Comparação"){
+      
+      tempo_med_sul_hora <- tempo_med_sul_hora
+      
+    }else{
+      
+      tempo_med_sul_hora <- tempo_med_sul_hora %>% 
+        filter(ESPECIALIDADE == input$tempo_atd_medicos_sul_especialidade)  
+      
+    }
+                                          
+    tempo_med_sul_hora
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de atendimentos médicos no sul por hora do dia
+  output$tempo_atd_medicos_sul_hora_info <- renderText({
+    
+    paste("<b>A.26)Mediana do Tempo de Atendimentos Médicos na Clínica da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de atendimentos médicos na clínica da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>A.27)Mediana do Tempo de Atendimentos Médicos na Pediatria da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na pediatria da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>A.28)Mediana do Tempo de Atendimentos Médicos na Cirurgia da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na cirurgia da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>A.29)Mediana do Tempo Total de Atendimentos Médicos da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>A.30)Mediana do Tempo de Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Hora do Dia, nos últimos 6 meses")
+  })
+  
+ ###########################################################################################                         
+ #Tempo de espera                                                         
+ ###########################################################################################
+
+  #gráfico de tempo de espera por de atendimentos médicos no sul por mês
+  output$tempo_esp_medicos_sul_mes_plot <- renderPlotly({
+    
+    if(input$tempo_esp_medicos_sul_especialidade == "Comparação"){
+                                            
+     espera_med_sul_mes <- espera_med_sul_mes
+      
+      a<-ggplot(espera_med_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      espera_med_sul_mes <- espera_med_sul_mes %>% 
+        filter(ESPECIALIDADE == input$tempo_esp_medicos_sul_especialidade)  
+      
+      a<-ggplot(espera_med_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de espera por atendimentos médicos no sul por mês
+  output$tempo_esp_medicos_sul_mes_tab <- renderDataTable({
+    
+    if(input$tempo_esp_medicos_sul_especialidade == "Comparação"){
+                                            
+     espera_med_sul_mes <- espera_med_sul_mes
+      
+    }else{
+      
+      espera_med_sul_mes <- espera_med_sul_mes %>% 
+        filter(ESPECIALIDADE == input$tempo_esp_medicos_sul_especialidade)}  
+      
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de  tempo de espera por atendimentos médicos no sul por mês
+  output$tempo_esp_medicos_sul_mes_info <- renderText({
+    
+    paste("<b>A.31)Mediana do Tempo de Espera por Atendimentos Médicos na Clínica da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera por atendimentos médicos na clínica da UPA, por Mês" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.32)Mediana do Tempo de Espera por Atendimentos Médicos na Pediatria da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na pediatria da UPA, por Mês" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.33)Mediana do Tempo de Espera por Atendimentos Médicos na Cirurgia da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na cirurgia da UPA, por Mês" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.34)Mediana do Tempo Total de Espera por Atendimentos Médicos da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos da UPA, por Mês" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.35)Mediana do Tempo de Espera por Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Mês" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+    
+  })
+  
+  #gráfico de tempo de espera por atendimentos médicos no sul por dia da semana
+  output$tempo_esp_medicos_sul_dia_plot <- renderPlotly({
+    
+    
+    if(input$tempo_esp_medicos_sul_especialidade == "Comparação"){
+      
+      espera_med_sul_dia <- espera_med_sul_dia
+      
+      a<-ggplot(espera_med_sul_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      espera_med_sul_dia <- espera_med_sul_dia %>% 
+        filter(ESPECIALIDADE == input$tempo_esp_medicos_sul_especialidade)  
+      
+      a<-ggplot(espera_med_sul_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de espera por atendimentos médicos no sul por dia da semana
+  output$tempo_esp_medicos_sul_dia_tab <- renderDataTable({
+    
+    if(input$tempo_esp_medicos_sul_especialidade == "Comparação"){
+      
+      espera_med_sul_dia <- espera_med_sul_dia
+      
+   }else{
+      
+      espera_med_sul_dia <- espera_med_sul_dia %>% 
+        filter(ESPECIALIDADE == input$tempo_esp_medicos_sul_especialidade)}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de espera por tempo de atendimentos médicos no sul por dia
+  output$tempo_esp_medicos_sul_dia_info <- renderText({
+    
+    paste("<b>A.36)Mediana do Tempo de Espera por Atendimentos Médicos na Clínica da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera por atendimentos médicos na clínica da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.37)Mediana do Tempo de Espera por Atendimentos Médicos na Pediatria da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na pediatria da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.38)Mediana do Tempo de Espera por Atendimentos Médicos na Cirurgia da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na cirurgia da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.39)Mediana do Tempo Total de Espera por Atendimentos Médicos da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos da UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.40)Mediana do Tempo de Espera por Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+    
+    
+  })
+  
+  
+  #gráfico de tempo de espera por atendimentos médicos no sul por hora do dia
+  output$tempo_esp_medicos_sul_hora_plot <- renderPlotly({
+    
+    if(input$tempo_esp_medicos_sul_especialidade == "Comparação"){
+      
+      espera_med_sul_hora <- espera_med_sul_hora
+      
+      a<-ggplot(espera_med_sul_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = ESPECIALIDADE), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      espera_med_sul_hora <- espera_med_sul_hora %>% 
+        filter(ESPECIALIDADE == input$tempo_esp_medicos_sul_especialidade)  
+      
+      a<-ggplot(espera_med_sul_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de espera por atendimentos médicos no sul por hora do dia
+  output$tempo_esp_medicos_sul_hora_tab <- renderDataTable({
+    
+    if(input$tempo_esp_medicos_sul_especialidade == "Comparação"){
+      
+      espera_med_sul_hora <- espera_med_sul_hora
+    
+    }else{
+      
+      espera_med_sul_hora <- espera_med_sul_hora %>% 
+        filter(ESPECIALIDADE == input$tempo_esp_medicos_sul_especialidade)}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de espera por atendimentos médicos no sul por hora do dia
+  output$tempo_esp_medicos_sul_hora_info <- renderText({
+    
+    paste("<b>A.41)Mediana do Tempo de Espera por Atendimentos Médicos na Clínica da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera por atendimentos médicos na clínica da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.42)Mediana do Tempo de Espera por Atendimentos Médicos na Pediatria da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na pediatria da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.43)Mediana do Tempo de Espera por Atendimentos Médicos na Cirurgia da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na cirurgia da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.44)Mediana do Tempo Total de Espera por Atendimentos Médicos da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de atendimentos médicos da UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>A.45)Mediana do Tempo de Espera por Atendimentos Médicos na Clínica, na Pediatria, na Cirurgia e Total da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b>  Mediana do tempo (em minutos) de espera por atendimentos médicos na clínica da UPA, na pediatria, na cirurgia e total, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> O tempo é calculado da chegada do paciente ao início da consulta e somente para aqueles que passaram por classifciação e risco pelo enfermeiro" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+  })
+  
+  ###########################################################################################
+  #Dashboard Classificação de Risco UPA Sul  
+  ###########################################################################################
+  
+  #gráfico de classificação de risco no sul por mês
+  output$num_atd_classificacao_sul_mes_plot <- renderPlotly({
+    
+    
+    if(input$num_atd_classificacao_sul_tipo == "Comparação"){
+      
+      atendimentos_classificacao_sul_mes  
+
+      a<-ggplot(atendimentos_classificacao_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+        scale_y_continuous(breaks = c(0, 5000,10000,15000))
+      
+    }else if (input$num_atd_classificacao_sul_tipo == "Total"){
+      
+      atendimento_classificacao_sul_mes <- atendimentos_classificacao_sul_mes  %>%
+       filter(VARIAVEL == "PRODUZIDO") 
+       
+       
+      a<-ggplot(atendimento_classificacao_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+        geom_hline(yintercept = 10125,col = "red", size = 0.8)+
+        geom_hline(yintercept = 9000, col = "red", size = 0.2)+
+        geom_hline(yintercept = 7875, col = "red", size = 0.2)+
+        geom_hline(yintercept = 6750, col = "red", size = 0.2)+
+        geom_hline(yintercept = 5625, col = "red", size = 0.2)+
+        geom_hline(yintercept = 4500, col = "red", size = 0.2)+
+        geom_hline(yintercept = 3375, col = "red", size = 0.2)+
+        geom_hline(yintercept = 2250, col = "red", size = 0.2)+
+        scale_y_continuous(breaks = c(0, 2250,3375,4500,5625,6750,7875,9000,10125,11000,12000,13000,14000,15000),limits=c(0,16000))
+
+      
+      
+      
+    }else{
+      
+      atendimentos_classificacao_sul_mes <- atendimentos_classificacao_sul_mes %>%
+       filter(CLASSIFICACAO == input$num_atd_classificacao_sul_tipo)  
+      
+      a<-ggplot(atendimentos_classificacao_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))+
+        scale_y_continuous(breaks = c(0, 5000,10000,15000))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de classificação de risco sul por mês
+  output$num_atd_classificacao_sul_mes_tab <- renderDataTable({
+    
+    if(input$num_atd_classificacao_sul_tipo == "Comparação"){
+      
+      atendimentos_classificacao_sul_mes <- atendimentos_classificacao_sul_mes  %>%
+       filter(VARIAVEL == "PRODUZIDO" | is.na(VARIAVEL)) #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+        
+
+    }else if (input$num_atd_classificacao_sul_tipo == "Total"){
+      
+      atendimentos_classificacao_sul_mes <- atendimentos_classificacao_sul_mes  %>%
+       filter(CLASSIFICACAO == "Total")%>%
+       filter(VARIAVEL == "PRODUZIDO") #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
+          
+      
+
+    }else{
+      
+      atendimentos_classificacao_sul_mes <- atendimentos_classificacao_sul_mes %>%
+       filter(CLASSIFICACAO == input$num_atd_classificacao_sul_tipo)}  
+      
+
+    atendimentos_classificacao_sul_mes
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de classificação de risco sul por mês
+  output$num_atd_classificacao_sul_mes_info <- renderText({
+    
+    paste("<b>B.01)Número de Pacientes Classificados com Risco Ambulatorial na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de pacientes classificados com risco ambulatorial na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.02)Número de Pacientes Classificados com Risco Intercorrência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de pacientes classificados com risco intercorrência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.03)Número de Pacientes Classificados com Risco Urgência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de pacientes classificados com risco urgência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.04)Número de Pacientes Classificados com Risco Emergência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de pacientes classificados com risco emergência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.05)Número Total de Pacientes com Classificados de Risco na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de pacientes classificados na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.06)Número de Pacientes Classificados com Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de pacientes classificados com risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+  })
+  
+  #gráfico de classificação de risco sul por dia da semana
+  output$num_atd_classificacao_sul_dia_plot <- renderPlotly({
+    
+    if(input$num_atd_classificacao_sul_tipo == "Comparação"){
+      
+      atendimentos_classificacao_sul_dia <- atendimentos_classificacao_sul_dia
+      
+      a<-ggplot(atendimentos_classificacao_sul_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      atendimentos_classificacao_sul_dia <- atendimentos_classificacao_sul_dia %>% 
+        filter(CLASSIFICACAO == input$num_atd_classificacao_sul_tipo)  
+      
+      a<-ggplot(atendimentos_classificacao_sul_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de classificação de risco sul por dia da semana
+  output$num_atd_classificacao_sul_dia_tab <- renderDataTable({
+    
+    if(input$num_atd_classificacao_sul_tipo == "Comparação"){
+      
+      atendimentos_classificacao_sul_dia <- atendimentos_classificacao_sul_dia
+      
+    }else{
+      
+      atendimentos_classificacao_sul_dia <- atendimentos_classificacao_sul_dia %>% 
+        filter(CLASSIFICACAO == input$num_atd_classificacao_sul_tipo)}  
+
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de classificação de risco sul por dia
+  output$num_atd_classificacao_sul_dia_info <- renderText({
+    
+    paste("<b>B.07)Mediana de Pacientes Classificados com Risco Ambulatorial na UPA, por Dia da Semana</b>" , "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco ambulatorial na UPA, por Dia da Semana, nos últimos 6 meses", "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.08)Mediana de Pacientes Classificados com Risco Intercorrência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco intercorrência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.09)Mediana de Pacientes Classificados com Risco Urgência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco urgência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.10)Mediana de Pacientes Classificados com Risco Emergência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco emergência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.11)Mediana de Pacientes com Classificados de Risco na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.12)Mediana de Pacientes Classificados com Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+  })
+  
+  
+  #gráfico de classificação de risco sul por hora do dia
+  output$num_atd_classificacao_sul_hora_plot <- renderPlotly({
+    
+    if(input$num_atd_classificacao_sul_tipo == "Comparação"){
+      
+      atendimentos_classificacao_sul_hora <- atendimentos_classificacao_sul_hora
+      
+      a<-ggplot(atendimentos_classificacao_sul_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+     atendimentos_classificacao_sul_hora <- atendimentos_classificacao_sul_hora %>% 
+        filter(CLASSIFICACAO == input$num_atd_classificacao_sul_tipo)  
+      
+      a<-ggplot(atendimentos_classificacao_sul_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de classificação de risco sul por hora do dia
+  output$num_atd_classificacao_sul_hora_tab <- renderDataTable({
+    
+    if(input$num_atd_classificacao_sul_tipo == "Comparação"){
+      
+      atendimentos_classificacao_sul_hora <- atendimentos_classificacao_sul_hora
+      
+    }else{
+      
+     atendimentos_classificacao_sul_hora <- atendimentos_classificacao_sul_hora %>% 
+        filter(CLASSIFICACAO == input$num_atd_classificacao_sul_tipo)} 
+                                          
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de classificação de risco sul por hora do dia
+  output$num_atd_classificacao_sul_hora_info <- renderText({
+    
+    paste("<b>B.13)Mediana de Pacientes Classificados com Risco Ambulatorial na UPA, por Hora do Dia</b>" , "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco ambulatorial na UPA, por Hora do Dia, nos últimos 6 meses", "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.14)Mediana de Pacientes Classificados com Risco Intercorrência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco intercorrência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.15)Mediana de Pacientes Classificados com Risco Urgência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco urgência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.16)Mediana de Pacientes Classificados com Risco Emergência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco emergência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.17)Mediana de Pacientes com Classificados de Risco na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.18)Mediana de Pacientes Classificados com Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de pacientes classificados com risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+  })
+  
+  #gráfico de tempo de classificação de risco no sul por mês
+  output$tempo_atd_classificacao_sul_mes_plot <- renderPlotly({
+    
+    if(input$tempo_atd_classificacao_sul_tipo == "Comparação"){
+
+     tempo_classificacao_sul_mes <- tempo_classificacao_sul_mes
+      
+      a<-ggplot(tempo_classificacao_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      tempo_classificacao_sul_mes <- tempo_classificacao_sul_mes %>% 
+        filter(CLASSIFICACAO == input$tempo_atd_classificacao_sul_tipo)  
+      
+      a<-ggplot(tempo_classificacao_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de de tempo de classificação de risco no sul por mês
+  output$tempo_atd_classificacao_sul_mes_tab <- renderDataTable({
+    
+    if(input$tempo_atd_classificacao_sul_tipo == "Comparação"){
+
+     tempo_classificacao_sul_mes <- tempo_classificacao_sul_mes
+      
+    }else{
+      
+      tempo_classificacao_sul_mes <- tempo_classificacao_sul_mes %>% 
+        filter(CLASSIFICACAO == input$tempo_atd_classificacao_sul_tipo)}
+   
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de  tempo de classificação de risco no sul por mês
+  output$tempo_atd_classificacao_sul_mes_info <- renderText({
+    
+    paste("<b>B.19)Mediana do Tempo de Duração da Classificação de Risco Ambulatorial na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco ambulatorial na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.20)Mediana do Tempo de Duração da Classificação de Risco Intercorrência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco intercorrência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.21)Mediana do Tempo de Duração da Classificação de Risco Urgência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco urgência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.22)Mediana do Tempo de Duração da Classificação de Risco Emergência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> SMediana do tempo (em minutos) da classificação de risco emergência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.23)Mediana do Tempo de Duração da Classificação de Risco na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.24)Mediana do Tempo de Duração da Classificação de Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+    
+    
+  })
+  
+  #gráfico de tempo de classificação de risco no sul por dia da semana
+  output$tempo_atd_classificacao_sul_dia_plot <- renderPlotly({
+    
+    if(input$tempo_atd_classificacao_sul_tipo == "Comparação"){
+      
+      tempo_classificacao_sul_dia <- tempo_classificacao_sul_dia
+      
+      a<-ggplot(tempo_classificacao_sul_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      tempo_classificacao_sul_dia <- tempo_classificacao_sul_dia %>% 
+       filter(CLASSIFICACAO == input$tempo_atd_classificacao_sul_tipo)  
+      
+      a<-ggplot(tempo_classificacao_sul_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de classificação de risco no sul por dia da semana
+  output$tempo_atd_classificacao_sul_dia_tab <- renderDataTable({
+    
+    if(input$tempo_atd_classificacao_sul_tipo == "Comparação"){
+      
+      tempo_classificacao_sul_dia <- tempo_classificacao_sul_dia
+
+    }else{
+      
+      tempo_classificacao_sul_dia <- tempo_classificacao_sul_dia %>% 
+       filter(CLASSIFICACAO == input$tempo_atd_classificacao_sul_tipo)}
+                                          
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de classificação de risco no sul por dia
+  output$tempo_atd_classificacao_sul_dia_info <- renderText({
+    
+    paste("<b>B.25)Mediana do Tempo de Duração da Classificação de Risco Ambulatorial na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco ambulatorial na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.26)Mediana do Tempo de Duração da Classificação de Risco Intercorrência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco intercorrência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.27)Mediana do Tempo de Duração da Classificação de Risco Urgência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco urgência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.28)Mediana do Tempo de Duração da Classificação de Risco Emergência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> SMediana do tempo (em minutos) da classificação de risco emergência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.29)Mediana do Tempo de Duração da Classificação de Risco na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.30)Mediana do Tempo de Duração da Classificação de Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+    
+    
+    
+  })
+  
+  
+  #gráfico de tempo de classificação de risco no sul por hora do dia
+  output$tempo_atd_classificacao_sul_hora_plot <- renderPlotly({
+    
+    if(input$tempo_atd_classificacao_sul_tipo == "Comparação"){
+      
+      tempo_classificacao_sul_hora <- tempo_classificacao_sul_hora
+      
+      a<-ggplot(tempo_classificacao_sul_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      tempo_classificacao_sul_hora <- tempo_classificacao_sul_hora %>% 
+        filter(CLASSIFICACAO == input$tempo_atd_classificacao_sul_tipo)  
+      
+      a<-ggplot(tempo_classificacao_sul_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de classificação de risco no sul por hora do dia
+  output$tempo_atd_classificacao_sul_hora_tab <- renderDataTable({
+    
+    if(input$tempo_atd_classificacao_sul_tipo == "Comparação"){
+      
+      tempo_classificacao_sul_hora <- tempo_classificacao_sul_hora
+      
+    }else{
+      
+      tempo_classificacao_sul_hora <- tempo_classificacao_sul_hora %>% 
+        filter(CLASSIFICACAO == input$tempo_atd_classificacao_sul_tipo)}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de classificação de risco no sul por hora do dia
+  output$tempo_atd_classificacao_sul_hora_info <- renderText({
+    
+    paste("<b>B.31)Mediana do Tempo de Duração da Classificação de Risco Ambulatorial na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco ambulatorial na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.32)Mediana do Tempo de Duração da Classificação de Risco Intercorrência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco intercorrência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.33)Mediana do Tempo de Duração da Classificação de Risco Urgência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco urgência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.34)Mediana do Tempo de Duração da Classificação de Risco Emergência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> SMediana do tempo (em minutos) da classificação de risco emergência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.35)Mediana do Tempo de Duração da Classificação de Risco na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.36)Mediana do Tempo de Duração da Classificação de Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) da classificação de risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+  })
+  
+  #gráfico de espera de classificação de risco no sul por mês
+  output$tempo_esp_classificacao_sul_mes_plot <- renderPlotly({
+    
+    if(input$tempo_esp_classificacao_sul_tipo == "Comparação"){
+                                            
+      espera_classificacao_sul_mes <- espera_classificacao_sul_mes
+      
+      a<-ggplot(espera_classificacao_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      espera_classificacao_sul_mes <- espera_classificacao_sul_mes %>% 
+        filter(CLASSIFICACAO == input$tempo_esp_classificacao_sul_tipo)  
+      
+      a<-ggplot(espera_classificacao_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de de espera de classificação de risco no sul por mês
+  output$tempo_esp_classificacao_sul_mes_tab <- renderDataTable({
+    
+    if(input$tempo_esp_classificacao_sul_tipo == "Comparação"){
+                                            
+      espera_classificacao_sul_mes <- espera_classificacao_sul_mes
+      
+    }else{
+      
+      espera_classificacao_sul_mes <- espera_classificacao_sul_mes %>% 
+        filter(CLASSIFICACAO == input$tempo_esp_classificacao_sul_tipo)}
+        
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de  espera de classificação de risco no sul por mês
+  output$tempo_esp_classificacao_sul_mes_info <- renderText({
+    
+    paste("<b>B.37)Mediana do Tempo de Espera para Classificação de Risco Ambulatorial na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera para classificação de risco ambulatorial na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.38)Mediana do Tempo de Espera para Classificação de Risco Intercorrência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera para classificação de risco intercorrência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.39)Mediana do Tempo de Espera para Classificação de Risco Urgência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera para classificação de risco urgência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.40)Mediana do Tempo de Espera para Classificação de Risco Emergência na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> SMediana do tempo (em minutos) de espera para classificação de risco emergência na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.41)Mediana do Tempo de Espera para Classificação de Risco na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera para classificação de risco na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.42)Mediana do Tempo de Espera para Classificação de Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) de espera para classificação de risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Mês" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+    
+    
+  })
+  
+  #gráfico de espera de classificação de risco no sul por dia da semana
+  output$tempo_esp_classificacao_sul_dia_plot <- renderPlotly({
+    
+    if(input$tempo_esp_classificacao_sul_tipo == "Comparação"){
+      
+      espera_classificacao_sul_dia <- espera_classificacao_sul_dia
+      
+      a<-ggplot(espera_classificacao_sul_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      espera_classificacao_sul_dia <- espera_classificacao_sul_dia %>% 
+       filter(CLASSIFICACAO == input$tempo_esp_classificacao_sul_tipo)  
+      
+      a<-ggplot(espera_classificacao_sul_dia, aes(x = as.factor(DIA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de espera de classificação de risco no sul por dia da semana
+  output$tempo_esp_classificacao_sul_dia_tab <- renderDataTable({
+    
+    if(input$tempo_esp_classificacao_sul_tipo == "Comparação"){
+      
+      espera_classificacao_sul_dia <- espera_classificacao_sul_dia
+      
+    }else{
+      
+      espera_classificacao_sul_dia <- espera_classificacao_sul_dia %>% 
+       filter(CLASSIFICACAO == input$tempo_esp_classificacao_sul_tipo)}
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de espera de classificação de risco no sul por dia
+  output$tempo_esp_classificacao_sul_dia_info <- renderText({
+    
+    paste("<b>B.43)Mediana do espera de Duração da Classificação de Risco Ambulatorial na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco ambulatorial na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.44)Mediana do espera de Duração da Classificação de Risco Intercorrência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco intercorrência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.45)Mediana do espera de Duração da Classificação de Risco Urgência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco urgência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.46)Mediana do espera de Duração da Classificação de Risco Emergência na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> SMediana do espera (em minutos) da classificação de risco emergência na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.47)Mediana do espera de Duração da Classificação de Risco na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.48)Mediana do espera de Duração da Classificação de Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Dia da Semana, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+    
+    
+    
+  })
+  
+  
+  #gráfico de espera de classificação de risco no sul por hora do dia
+  output$tempo_esp_classificacao_sul_hora_plot <- renderPlotly({
+    
+    if(input$tempo_esp_classificacao_sul_tipo == "Comparação"){
+      
+      espera_classificacao_sul_hora <- espera_classificacao_sul_hora
+      
+      a<-ggplot(espera_classificacao_sul_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = CLASSIFICACAO), position = "dodge")+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))
+      
+    }else{
+      
+      espera_classificacao_sul_hora <- espera_classificacao_sul_hora %>% 
+       filter(CLASSIFICACAO == input$tempo_esp_classificacao_sul_tipo)  
+      
+      a<-ggplot(espera_classificacao_sul_hora, aes(x = as.factor(HORA))) + 
+        geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+        ylab("  ")+
+        xlab("  ")+
+        theme_classic()+
+        theme(axis.text.x = element_text(angle = 90, hjust = 1))}
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de espera de classificação de risco no sul por hora do dia
+  output$tempo_esp_classificacao_sul_hora_tab <- renderDataTable({
+    
+    if(input$tempo_esp_classificacao_sul_tipo == "Comparação"){
+      
+      espera_classificacao_sul_hora <- espera_classificacao_sul_hora
+
+          }else{
+      
+      espera_classificacao_sul_hora <- espera_classificacao_sul_hora %>% 
+       filter(CLASSIFICACAO == input$tempo_esp_classificacao_sul_tipo)}
+                                          
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de espera de classificação de risco no sul por hora do dia
+  output$tempo_esp_classificacao_sul_hora_info <- renderText({
+    
+    paste("<b>B.49)Mediana do espera de Duração da Classificação de Risco Ambulatorial na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco ambulatorial na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.50)Mediana do espera de Duração da Classificação de Risco Intercorrência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco intercorrência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.51)Mediana do espera de Duração da Classificação de Risco Urgência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco urgência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.52)Mediana do espera de Duração da Classificação de Risco Emergência na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> SMediana do espera (em minutos) da classificação de risco emergência na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.53)Mediana do espera de Duração da Classificação de Risco na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>",
+          "<b>B.54)Mediana do espera de Duração da Classificação de Risco Ambulatorial, Intercorrência, Urgência, Emergência e Total na UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do espera (em minutos) da classificação de risco ambulatorial, intercorrência, urgência, emergência e total na UPA, por Hora do Dia, nos últimos 6 meses" , "<br>",
+          "<b>Observação:</b> As classificaçãoes consideradas para o cálculo são aquelas realizadas pelo efermeiro e com o código de procedimeto 03.01.06.011-8, conforme Portaria Ministerial Nº 10/17", "<br>")
+    
+  })
+  
+  
+  
+  ###########################################################################################
+  #Dashboard Odontologia UPA Sul 
+  ###########################################################################################
+  
+  #gráfico de odontologia no sul por mês
+  output$num_atd_odontologia_sul_mes_plot <- renderPlotly({
+    
+    atendimentos_odontologia_sul_mes <- atendimentos_odontologia_sul_mes
+                                          
+    a<-ggplot(atendimentos_odontologia_sul_mes, aes(x = as.factor(DATA))) + 
+      geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela odontologia no sul por mês
+  output$num_atd_odontologia_sul_mes_tab <- renderDataTable({
+    
+    atendimentos_odontologia_sul_mes
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações odontologia no sul por mês
+  output$num_atd_odontologia_sul_mes_info <- renderText({
+    
+    paste("<b>C.01)Número de Atendimentos Odontológicos da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Somatório de atendimentos Odontológicos da UPA, por Mês" , "<br>")
+    
+  })
+  
+  #gráfico odontologia no sul por dia da semana
+  output$num_atd_odontologia_sul_dia_plot <- renderPlotly({
+    
+    a<-ggplot(atendimentos_odontologia_sul_dia, aes(x = as.factor(DIA))) + 
+      geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela odontologia no sul por dia da semana
+  output$num_atd_odontologia_sul_dia_tab <- renderDataTable({
+    
+    atendimentos_odontologia_sul_dia
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações odontologia no sul por mês
+  output$num_atd_odontologia_sul_dia_info <- renderText({
+    
+    paste("<b>C.02)Mediana de Atendimentos Odontológicos da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos Odontológicos da UPA, por Dia da Semana" )
+    
+    
+  })
+  
+  
+  #gráfico odontologia no sul por hora do dia
+  output$num_atd_odontologia_sul_hora_plot <- renderPlotly({
+    
+    a<-ggplot(atendimentos_odontologia_sul_hora, aes(x = as.factor(HORA))) + 
+      geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela odontologia sul por hora do dia
+  output$num_atd_odontologia_sul_hora_tab <- renderDataTable({
+    
+    atendimentos_odontologia_sul_hora
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações odontologia sul por hora do dia
+  output$num_atd_odontologia_sul_hora_info <- renderText({
+    
+    paste("<b>C.03)Mediana de Atendimentos Odontológicos da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana de atendimentos Odontológicos da UPA, por Hora do Dia" , "<br>")
+  })
+  
+  #gráfico de tempo de atendimento odontologico no sul por mês
+  output$tempo_atd_odontologia_sul_mes_plot <- renderPlotly({
+    
+    
+    a<-ggplot(tempo_odontologia_sul_mes, aes(x = as.factor(DATA))) + 
+      geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de de tempo de atendimento odontologico no sul por mês
+  output$tempo_atd_odontologia_sul_mes_tab <- renderDataTable({
+    
+    tempo_odontologia_sul_mes
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de  tempo de atendimento odontologico no sul por mês
+  output$tempo_atd_odontologia_sul_mes_info <- renderText({
+    
+    paste("<b>C.04)Mediana do Tempo de Duração dos Atendimentos Odontológicos da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) dos atendimentos odontológicos da UPA, por Mês" , "<br>")
+    
+  })
+  
+  #gráfico de tempo de atendimento odontologico no sul por dia da semana
+  output$tempo_atd_odontologia_sul_dia_plot <- renderPlotly({
+    
+    a<-ggplot(tempo_odontologia_sul_dia, aes(x = as.factor(DIA))) + 
+      geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de atendimento odontologico no sul por dia da semana
+  output$tempo_atd_odontologia_sul_dia_tab <- renderDataTable({
+    
+    tempo_odontologia_sul_dia
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de atendimento odontologico no sul por dia
+  output$tempo_atd_odontologia_sul_dia_info <- renderText({
+    
+    paste("<b>C.05)Mediana do Tempo de Duração dos Atendimentos Odontológicos da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) dos atendimentos odontológicos da UPA, por Dia da Semana" , "<br>")
+    
+  })
+  
+  
+  #gráfico de tempo de atendimento odontologico no sul por hora do dia
+  output$tempo_atd_odontologia_sul_hora_plot <- renderPlotly({
+    
+    a<-ggplot(tempo_odontologia_sul_hora, aes(x = as.factor(HORA))) + 
+      geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela de tempo de atendimento odontologico no sul por hora do dia
+  output$tempo_atd_odontologia_sul_hora_tab <- renderDataTable({
+    
+    tempo_odontologia_sul_hora
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações de tempo de atendimento odontologico no sul por hora do dia
+  output$tempo_atd_odontologia_sul_hora_info <- renderText({
+    
+    paste("<b>C.06)Mediana do Tempo de Duração dos Atendimentos Odontológicos da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo (em minutos) dos atendimentos odontológicos da UPA, por Hora do Dia" , "<br>")
+    
+  })
+  
+  #gráfico do tempo de espera por atendimento odontologico no sul por mês
+  output$tempo_esp_odontologia_sul_mes_plot <- renderPlotly({
+    
+    
+    a<-ggplot(espera_odontologia_sul_mes, aes(x = as.factor(DATA))) + 
+      geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela do tempo de espera por atendimento odontologico no sul por mês
+  output$tempo_esp_odontologia_sul_mes_tab <- renderDataTable({
+    
+    espera_odontologia_sul_mes
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações do tempo de espera por atendimento odontologico no sul por mês
+  output$tempo_esp_odontologia_sul_mes_info <- renderText({
+    
+    paste("<b>C.07)Mediana do Tempo de Espera por Atendimentos Odontológicos da UPA, por Mês</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo de espera (em minutos) por atendimentos odontológicos da UPA, por Mês" , "<br>")
+    
+  })
+  
+  #gráfico do tempo de espera por atendimento odontologico no sul por dia da semana
+  output$tempo_esp_odontologia_sul_dia_plot <- renderPlotly({
+    
+    a<-ggplot(espera_odontologia_sul_dia, aes(x = as.factor(DIA))) + 
+      geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela do tempo de espera por atendimento odontologico no sul por dia da semana
+  output$tempo_esp_odontologia_sul_dia_tab <- renderDataTable({
+    
+    espera_odontologia_sul_dia
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações do tempo de espera por atendimento odontologico no sul por dia
+  output$tempo_esp_odontologia_sul_dia_info <- renderText({
+    
+    paste("<b>C.08)Mediana do Tempo de Espera por Atendimentos Odontológicos da UPA, por Dia da Semana</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo de espera (em minutos) por atendimentos odontológicos da UPA, por Dia da Semana" , "<br>")
+    
+  })
+  
+  
+  #gráfico do tempo de espera por atendimento odontologico no sul por hora do dia
+  output$tempo_esp_odontologia_sul_hora_plot <- renderPlotly({
+    
+    a<-ggplot(espera_odontologia_sul_hora, aes(x = as.factor(HORA))) + 
+      geom_col(aes(y = MINUTOS, fill = MINUTOS))+ 
+      ylab("  ")+
+      xlab("  ")+
+      theme_classic()+
+      theme(axis.text.x = element_text(angle = 90, hjust = 1))
+    
+    
+    ggplotly(a)
+    
+  })
+  
+  #tabela do tempo de espera por atendimento odontologico no sul por hora do dia
+  output$tempo_esp_odontologia_sul_hora_tab <- renderDataTable({
+    
+    espera_odontologia_sul_hora
+    
+  }, extensions = 'Buttons',
+  options = list(
+    "dom" = 'T<"clear">lBfrtip',
+    buttons = list('copy', 'csv', 'pdf', 'print')))
+  
+  
+  #informações do tempo de espera por atendimento odontologico no sul por hora do dia
+  output$tempo_esp_odontologia_sul_hora_info <- renderText({
+    
+    paste("<b>C.09)Mediana do Tempo de Espera por Atendimentos Odontológicos da UPA, por Hora do Dia</b>", "<br>",
+          "<b>Fórmula:</b> Mediana do tempo de espera (em minutos) por atendimentos odontológicos da UPA, por Hora do Dia" , "<br>")
+    
+  })
+  
+  
+  
+}    
+
+###########################################################################################
+shinyApp(ui, server)
