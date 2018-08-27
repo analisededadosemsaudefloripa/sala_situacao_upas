@@ -1,4 +1,3 @@
-Sys.setlocale("LC_TIME","English_United States.1252")
 options(encoding = "UTF-8")
 
 ########################################################################################### 
@@ -861,12 +860,14 @@ server <- function(input, output, session) {
         
       
       a<-ggplot(medicos_norte_mes, aes(x = as.factor(DATA))) + 
-        geom_col(aes(y = QUANTIDADE, fill = ESPECIALIDADE, group = DATA), position = "dodge")+ 
+        geom_col(aes(y = QUANTIDADE, fill = ESPECIALIDADE), position = "dodge")+ 
         ylab("  ")+
         xlab("  ")+
         theme_classic()+
         theme(axis.text.x = element_text(angle = 90, hjust = 1))+
         scale_y_continuous(breaks = c(0, 5000,10000,15000))
+      
+      
       
     }else if (input$num_atd_medicos_norte_especialidade == "Total"){
       
@@ -1569,19 +1570,26 @@ server <- function(input, output, session) {
       
     }else if (input$num_atd_classificacao_norte_tipo == "Total"){
       
-      atendimentos_classificacao_norte_mes <- atendimentos_classificacao_norte_mes  %>%
-       filter(CLASSIFICACAO == "Total")       
-       levels(atendimentos_classificacao_norte_mes$VARIAVEL) <- c("PRODUZIDO", "DEFCIT UPA PORTE 8")
-
-      a<-ggplot(atendimentos_classificacao_norte_mes, aes(x = as.factor(DATA), y=QUANTIDADE, fill = VARIAVEL))+
-        geom_col(position = position_stack(reverse = FALSE))+
+      atendimento_classificacao_norte_mes <- atendimentos_classificacao_norte_mes  %>%
+       filter(VARIAVEL == "PRODUZIDO") 
+       
+       
+      a<-ggplot(atendimento_classificacao_norte_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
         ylab("  ")+
         xlab("  ")+
         theme_classic()+
         theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-        scale_y_continuous(breaks = c(0, 2250,3375,4500,5625,6750,7875,9000,10125,11000,12000,13000,14000,15000))+
-        scale_fill_manual(values = c("red", "#0072B2"))
-      
+        geom_hline(yintercept = 10125,col = "red", size = 0.8)+
+        geom_hline(yintercept = 9000, col = "red", size = 0.2)+
+        geom_hline(yintercept = 7875, col = "red", size = 0.2)+
+        geom_hline(yintercept = 6750, col = "red", size = 0.2)+
+        geom_hline(yintercept = 5625, col = "red", size = 0.2)+
+        geom_hline(yintercept = 4500, col = "red", size = 0.2)+
+        geom_hline(yintercept = 3375, col = "red", size = 0.2)+
+        geom_hline(yintercept = 2250, col = "red", size = 0.2)+
+        scale_y_continuous(breaks = c(0, 2250,3375,4500,5625,6750,7875,9000,10125,11000,12000,13000,14000,15000),limits=c(0,16000))
+     
       
     }else{
       
@@ -3290,9 +3298,8 @@ server <- function(input, output, session) {
     
     if(input$num_atd_classificacao_sul_tipo == "Comparação"){
       
-      atendimentos_classificacao_sul_mes <- atendimentos_classificacao_sul_mes  %>%
-       filter(VARIAVEL == "PRODUZIDO" | is.na(VARIAVEL)) #retirando a duplicação do Total, produzido pela variável DÉFCIT UPA PORTE 8
-        
+      atendimentos_classificacao_sul_mes  
+
       a<-ggplot(atendimentos_classificacao_sul_mes, aes(x = as.factor(DATA))) + 
         geom_col(aes(y = QUANTIDADE, fill = CLASSIFICACAO), position = "dodge")+ 
         ylab("  ")+
@@ -3303,18 +3310,25 @@ server <- function(input, output, session) {
       
     }else if (input$num_atd_classificacao_sul_tipo == "Total"){
       
-      atendimentos_classificacao_sul_mes <- atendimentos_classificacao_sul_mes  %>%
-       filter(CLASSIFICACAO == "Total")       
-       levels( atendimentos_classificacao_sul_mes$VARIAVEL) <- c("PRODUZIDO", "DEFCIT UPA PORTE 8")
-
-      a<-ggplot(atendimentos_classificacao_sul_mes, aes(x = as.factor(DATA), y=QUANTIDADE, fill = VARIAVEL))+
-        geom_col(position = position_stack(reverse = FALSE))+
+      atendimento_classificacao_sul_mes <- atendimentos_classificacao_sul_mes  %>%
+       filter(VARIAVEL == "PRODUZIDO") 
+       
+       
+      a<-ggplot(atendimento_classificacao_sul_mes, aes(x = as.factor(DATA))) + 
+        geom_col(aes(y = QUANTIDADE, fill = QUANTIDADE))+ 
         ylab("  ")+
         xlab("  ")+
         theme_classic()+
         theme(axis.text.x = element_text(angle = 90, hjust = 1))+
-        scale_y_continuous(breaks = c(0, 2250,3375,4500,5625,6750,7875,9000,10125,11000,12000,13000,14000,15000))+
-        scale_fill_manual(values = c("red", "#0072B2"))
+        geom_hline(yintercept = 10125,col = "red", size = 0.8)+
+        geom_hline(yintercept = 9000, col = "red", size = 0.2)+
+        geom_hline(yintercept = 7875, col = "red", size = 0.2)+
+        geom_hline(yintercept = 6750, col = "red", size = 0.2)+
+        geom_hline(yintercept = 5625, col = "red", size = 0.2)+
+        geom_hline(yintercept = 4500, col = "red", size = 0.2)+
+        geom_hline(yintercept = 3375, col = "red", size = 0.2)+
+        geom_hline(yintercept = 2250, col = "red", size = 0.2)+
+        scale_y_continuous(breaks = c(0, 2250,3375,4500,5625,6750,7875,9000,10125,11000,12000,13000,14000,15000),limits=c(0,16000))
 
       
       
